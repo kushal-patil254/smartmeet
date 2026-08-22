@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="login-container">
+
+    <h1>Welcome to SmartMeet</h1>
+
+    <h2>Dashboard</h2>
+
+  <button onclick="window.location.href='createMeeting.html'">
+Create Meeting
+</button>
+    <br><br>
+
+   <button onclick="window.location.href='join.html'">
+Join Meeting
+</button>
+
+    <br><br>
+    <br><br>
+
+<button onclick="window.location.href='history.html'">
+Meeting History
+</button>
+
+   <button onclick="logout()">Logout</button>
+
+</div>
+<script>
+function logout() {
+
+   localStorage.removeItem("isLoggedIn");
+
+    alert("Logged out successfully!");
+
+    window.location.href = "login.html";
+
+}
+</script>
+<script>
+
+if (localStorage.getItem("isLoggedIn") !== "true") {
+
+    window.location.href = "login.html";
+
+}
+
+</script>
+</body>
+</html>

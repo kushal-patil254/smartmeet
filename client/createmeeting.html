@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SmartMeet - Create Meeting</title>
+
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<div class="login-container">
+
+    <h1>Create Meeting</h1>
+
+    <input
+        type="text"
+        id="meetingName"
+        placeholder="Meeting Name"
+    >
+
+    <input
+        type="password"
+        id="meetingPassword"
+        placeholder="Meeting Password"
+    >
+
+    <select id="meetingDuration">
+
+        <option value="60">1 Hour</option>
+        <option value="120">2 Hours</option>
+        <option value="180">3 Hours</option>
+
+    </select>
+
+    <br><br>
+
+    <button
+        id="createBtn"
+        onclick="createMeeting()">
+        Create Meeting
+    </button>
+
+
+    <!-- Meeting Details -->
+
+    <div
+        id="meetingDetails"
+        style="display:none; margin-top:20px;">
+
+        <h3>Meeting Created Successfully</h3>
+
+        <p id="showMeetingId"></p>
+
+        <p id="showMeetingPassword"></p>
+
+    </div>
+
+</div>
+
+
+<script>
+
+async function createMeeting() {
+
+    const meetingName =
+        document.getElementById("meetingName")
+        .value
+        .trim();
+
+    const meetingPassword =
+        document.getElementById("meetingPassword")
+        .value
+        .trim();
+
+    const meetingDuration =
+        document.getElementById("meetingDuration")
+        .value;
+
+
+    // ==============================
+    // VALIDATION
+    // ==============================
+
+    if (meetingName === "") {
+
+        alert("Please enter Meeting Name!");
+
+        return;
+    }
+
+
+    if (meetingPassword === "") {
+
+        alert("Please enter Meeting Password!");
+
+        return;
+    }
+
+
+    // ==============================
+    // GENERATE MEETING ID
+    // ==============================
+
+    const meetingId =
+        Math.floor(
+            100000000 +
+            Math.random() * 900000000
+        );
+
+
+    // ==============================
+    // DISABLE BUTTON
+    // ==============================
+
+    const createBtn =
+        document.getElementById("createBtn");
+
+    createBtn.disabled = true;
+
+    createBtn.innerText =
+        "Creating Meeting...";
+
+
+    try {
+
+        // ==============================
+        // SAVE TO MYSQL
+        // ==============================
+
+        const response =
+            await fetch(
+                "http://localhost:3000/api/meetings/create",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        meetingId:
+                            meetingId,
+
+                        meetingName:
+                            meetingName,
+
+                        meetingPassword:
+                            meetingPassword,
+
+                        duration:
+                            meetingDuration
+
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        // ==============================
+        // DATABASE ERROR
+        // ==============================
+
+        if (!data.success) {
+
+            alert(
+                data.message ||
+                "Unable to create meeting."
+            );
+
+            createBtn.disabled = false;
+
+            createBtn.innerText =
+                "Create Meeting";
+
+            return;
+        }
+
+
+        // ==============================
+        // SAVE MEETING DATA
+        // ==============================
+
+        localStorage.setItem(
+            "hostMeetingName",
+            meetingName
+        );
+
+        localStorage.setItem(
+            "hostMeetingId",
+            meetingId
+        );
+
+        localStorage.setItem(
+            "hostMeetingPassword",
+            meetingPassword
+        );
+
+        localStorage.setItem(
+            "meetingDuration",
+            meetingDuration
+        );
+
+        localStorage.setItem(
+            "meetingStarted",
+            "false"
+        );
+
+
+        // ==============================
+        // MEETING HISTORY
+        // ==============================
+
+        let history =
+            JSON.parse(
+                localStorage.getItem(
+                    "meetingHistory"
+                )
+            ) || [];
+
+
+        history.push({
+
+            name:
+                meetingName,
+
+            id:
+                meetingId,
+
+            password:
+                meetingPassword,
+
+            duration:
+                meetingDuration,
+
+            date:
+                new Date().toLocaleString()
+
+        });
+
+
+        localStorage.setItem(
+            "meetingHistory",
+            JSON.stringify(history)
+        );
+
+
+        // ==============================
+        // SHOW MEETING DETAILS
+        // ==============================
+
+        document.getElementById(
+            "meetingDetails"
+        ).style.display = "block";
+
+
+        document.getElementById(
+            "showMeetingId"
+        ).innerText =
+            "Meeting ID : " +
+            meetingId;
+
+
+        document.getElementById(
+            "showMeetingPassword"
+        ).innerText =
+            "Password : " +
+            meetingPassword;
+
+
+        // ==============================
+        // REMOVE CREATE BUTTON
+        // ==============================
+
+        createBtn.remove();
+
+
+        // ==============================
+        // START MEETING BUTTON
+        // ==============================
+
+        const startBtn =
+            document.createElement("button");
+
+
+        startBtn.innerText =
+            "Start Meeting";
+
+
+        startBtn.id =
+            "startMeetingBtn";
+
+
+        startBtn.style.marginTop =
+            "20px";
+
+
+        startBtn.onclick =
+            function () {
+
+                localStorage.setItem(
+                    "meetingStarted",
+                    "true"
+                );
+
+                localStorage.setItem(
+                    "joinedUser",
+                    "Host"
+                );
+
+                window.location.href =
+                    "meeting.html";
+
+            };
+
+
+        document
+            .querySelector(".login-container")
+            .appendChild(startBtn);
+
+
+        alert(
+            "Meeting Created Successfully!"
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Create Meeting Error:",
+            error
+        );
+
+
+        alert(
+            "Unable to connect to server."
+        );
+
+
+        createBtn.disabled = false;
+
+        createBtn.innerText =
+            "Create Meeting";
+
+    }
+
+}
+
+</script>
+
+<script>
+if (localStorage.getItem("isLoggedIn") !== "true") {
+    window.location.href = "login.html";
+}
+</script>
+</body>
+</html>

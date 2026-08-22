@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmartMeet Login</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<div class="login-container">
+
+    <h1>SmartMeet</h1>
+
+    <h2>Login</h2>
+
+   <input type="email" id="email" placeholder="Enter Email">
+
+    <input type="password" id="password" placeholder="Enter Password">
+
+    <button onclick="loginUser()">Login</button>
+
+    <p>Don't have an account? <a href="signup.html">Sign Up</a></p>
+
+</div>
+   
+<script>
+async function loginUser() {
+
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+
+    try {
+
+        const response = await fetch("http://localhost:3000/api/auth/login", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                email,
+                password
+            })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+
+            localStorage.setItem("isLoggedIn", "true");
+
+            alert(data.message);
+
+            window.location.href = "dashboard.html";
+
+        } else {
+
+            alert(data.message);
+
+        }
+
+    } catch (error) {
+
+        console.log(error);
+
+        alert("Cannot connect to server!");
+
+    }
+
+}
+</script>
+
+</body>
+
+</html>

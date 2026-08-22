@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SmartMeet - Join Meeting</title>
+
+    <style>
+/* =========================================================
+   SMARTMEET - JOIN MEETING PAGE
+   ========================================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+}
+
+html,
+body {
+    width: 100%;
+    min-height: 100%;
+}
+
+body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background:
+        radial-gradient(circle at 15% 20%, rgba(37, 99, 235, 0.18), transparent 30%),
+        radial-gradient(circle at 85% 80%, rgba(14, 165, 233, 0.12), transparent 30%),
+        linear-gradient(135deg, #07111f, #0b1628 50%, #0a1220);
+
+    color: #ffffff;
+}
+
+
+/* =========================================================
+   JOIN CONTAINER
+   ========================================================= */
+
+.join-container {
+    width: 420px;
+    max-width: calc(100% - 30px);
+
+    padding: 38px 35px;
+
+    background: rgba(17, 27, 45, 0.96);
+
+    border: 1px solid #263752;
+
+    border-radius: 18px;
+
+    text-align: center;
+
+    box-shadow:
+        0 20px 60px rgba(0, 0, 0, 0.55),
+        0 0 30px rgba(37, 99, 235, 0.08);
+
+    animation: joinAppear 0.4s ease;
+}
+
+
+/* =========================================================
+   TITLE
+   ========================================================= */
+
+.join-container h1 {
+    margin-bottom: 28px;
+
+    font-size: 30px;
+
+    font-weight: 700;
+
+    background: linear-gradient(
+        90deg,
+        #ffffff,
+        #60a5fa
+    );
+
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+
+/* =========================================================
+   INPUTS
+   ========================================================= */
+
+.join-container input {
+    display: block;
+
+    width: 100%;
+    height: 50px;
+
+    margin: 14px 0;
+
+    padding: 0 15px;
+
+    border: 1px solid #33445f;
+
+    border-radius: 10px;
+
+    outline: none;
+
+    background: #0c1627;
+
+    color: #ffffff;
+
+    font-size: 14px;
+
+    transition: 0.2s;
+
+    pointer-events: auto;
+    user-select: text;
+}
+
+
+/* Placeholder */
+
+.join-container input::placeholder {
+    color: #7d8ca5;
+}
+
+
+/* Focus */
+
+.join-container input:focus {
+    border-color: #2563eb;
+
+    background: #0e1b30;
+
+    box-shadow:
+        0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+
+/* =========================================================
+   JOIN BUTTON
+   ========================================================= */
+
+.join-container button {
+    display: block;
+
+    width: 100%;
+    height: 50px;
+
+    margin-top: 17px;
+
+    border: none;
+
+    border-radius: 10px;
+
+    background: linear-gradient(
+        135deg,
+        #2563eb,
+        #1d4ed8
+    );
+
+    color: #ffffff;
+
+    font-size: 15px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.2s;
+
+    box-shadow:
+        0 8px 20px rgba(37, 99, 235, 0.22);
+}
+
+
+.join-container button:hover {
+    background: linear-gradient(
+        135deg,
+        #3b82f6,
+        #2563eb
+    );
+
+    transform: translateY(-1px);
+
+    box-shadow:
+        0 10px 25px rgba(37, 99, 235, 0.32);
+}
+
+
+.join-container button:active {
+    transform: translateY(0);
+}
+
+
+/* =========================================================
+   BACK BUTTON
+   ========================================================= */
+
+.join-container #backBtn {
+    background: #1a273a;
+
+    border: 1px solid #33445f;
+
+    color: #cbd5e1;
+
+    box-shadow: none;
+}
+
+
+.join-container #backBtn:hover {
+    background: #24344d;
+
+    border-color: #475b78;
+
+    color: #ffffff;
+
+    box-shadow: none;
+}
+
+
+/* =========================================================
+   ANIMATION
+   ========================================================= */
+
+@keyframes joinAppear {
+
+    from {
+        opacity: 0;
+        transform: translateY(15px) scale(0.98);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 500px) {
+
+    body {
+        padding: 15px;
+    }
+
+    .join-container {
+        width: 100%;
+
+        padding: 30px 22px;
+
+        border-radius: 15px;
+    }
+
+    .join-container h1 {
+        font-size: 26px;
+
+        margin-bottom: 22px;
+    }
+
+    .join-container input {
+        height: 48px;
+
+        font-size: 14px;
+    }
+
+    .join-container button {
+        height: 48px;
+
+        font-size: 14px;
+    }
+
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="join-container">
+
+    <h1>Join Meeting</h1>
+
+    <!-- Meeting ID -->
+    <input
+        type="text"
+        id="meetingId"
+        name="meetingId"
+        placeholder="Meeting ID"
+        autocomplete="off"
+        spellcheck="false"
+    >
+
+    <!-- User Name -->
+    <input
+        type="text"
+        id="userName"
+        name="userName"
+        placeholder="Your Name"
+        autocomplete="off"
+    >
+
+    <!-- Meeting Password -->
+    <input
+        type="password"
+        id="meetingPassword"
+        name="meetingPassword"
+        placeholder="Meeting Password"
+        autocomplete="off"
+    >
+
+    <button
+        type="button"
+        onclick="joinMeeting()">
+        Join Meeting
+    </button>
+
+    <button
+        type="button"
+        id="backBtn"
+        onclick="window.location.href='dashboard.html'">
+        Back
+    </button>
+
+</div>
+
+
+<script>
+
+async function joinMeeting() {
+
+    const meetingId =
+        document.getElementById("meetingId").value.trim();
+
+    const userName =
+        document.getElementById("userName").value.trim();
+
+    const meetingPassword =
+        document.getElementById("meetingPassword").value.trim();
+
+
+    if (!meetingId) {
+        alert("Please enter Meeting ID.");
+        return;
+    }
+
+    if (!userName) {
+        alert("Please enter Your Name.");
+        return;
+    }
+
+    if (!meetingPassword) {
+        alert("Please enter Meeting Password.");
+        return;
+    }
+
+
+    try {
+
+        console.log("Checking meeting...");
+        console.log("Meeting ID:", meetingId);
+
+
+        const response = await fetch(
+            "http://localhost:3000/api/meetings/join",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    meetingId: meetingId,
+                    meetingPassword: meetingPassword
+                })
+            }
+        );
+
+
+        console.log("Server response:", response.status);
+
+
+        const data = await response.json();
+
+        console.log("Server data:", data);
+
+
+        // IMPORTANT
+        if (data.success !== true) {
+
+            alert(
+                data.message ||
+                "This meeting cannot be joined."
+            );
+
+            return;
+        }
+
+
+        // Save participant information
+
+        localStorage.setItem(
+            "joinedUser",
+            userName
+        );
+
+        localStorage.setItem(
+            "hostMeetingId",
+            meetingId
+        );
+
+        localStorage.setItem(
+            "hostMeetingPassword",
+            meetingPassword
+        );
+
+
+        alert("Meeting Joined Successfully!");
+
+
+        window.location.href =
+            "meeting.html";
+
+
+    } catch (error) {
+
+        console.error(
+            "JOIN ERROR:",
+            error
+        );
+
+        alert(
+            "Server connection failed. Please make sure the server is running."
+        );
+
+    }
+
+}
+
+</script>
+
+</body>
+
+</html>

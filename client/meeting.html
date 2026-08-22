@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>SmartMeet - Meeting</title>
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<div class="meeting-container">
+
+    <!-- =========================================
+         MAIN VIDEO SECTION
+    ========================================== -->
+
+    <div class="video-section">
+
+        <!-- Meeting Title -->
+        <h2 id="meetingTitle">
+            SmartMeet
+        </h2>
+
+
+        <!-- Meeting Information -->
+        <div class="meeting-info">
+
+            <span>
+                ID:
+                <strong id="meetingId">-</strong>
+            </span>
+
+            <span>
+                Time:
+                <strong id="timer">01:00:00</strong>
+            </span>
+
+        </div>
+
+
+        <!-- =====================================
+             USER VIDEO AREA
+        ====================================== -->
+
+        <div id="userVideoArea">
+
+            <div id="userVideoContainer">
+
+                <!-- Remote participants will appear here -->
+
+            </div>
+
+
+            <!-- Slide Controls -->
+            <div id="slideControls">
+
+                <button id="prevBtn">
+                    Previous
+                </button>
+
+                <span id="slideNumber">
+                    1
+                </span>
+
+                <button id="nextBtn">
+                    Next
+                </button>
+
+            </div>
+
+        </div>
+
+
+        <!-- =====================================
+             LOCAL VIDEO
+        ====================================== -->
+
+        <video
+            id="localVideo"
+            autoplay
+            muted
+            playsinline
+        ></video>
+
+
+        <!-- =====================================
+             REMOTE VIDEO
+        ====================================== -->
+
+        <video
+            id="remoteVideo"
+            autoplay
+            playsinline
+        ></video>
+
+
+        <!-- =====================================
+             CONTROL BAR
+        ====================================== -->
+
+        <div class="control-bar">
+
+            <button id="cameraBtn">
+                🎥 Start Camera
+            </button>
+
+            <button id="micBtn">
+                🎤 Mic
+            </button>
+
+            <button id="screenBtn">
+                🖥 Screen Share
+            </button>
+
+            <button id="copyBtn">
+                🔗 Copy Meeting ID
+            </button>
+
+            <button id="leaveBtn">
+                🚪 Leave Meeting
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- =========================================
+         RIGHT SIDE PANEL
+    ========================================== -->
+
+    <div class="side-panel">
+
+        <!-- Participants -->
+
+        <h2>
+            Participants
+        </h2>
+
+
+        <div id="participants">
+
+            <p>
+                Loading...
+            </p>
+
+        </div>
+
+
+        <hr>
+
+
+        <!-- Chat -->
+
+        <h2>
+            Chat
+        </h2>
+
+
+        <div id="messages"></div>
+
+
+        <textarea
+            id="chatBox"
+            rows="3"
+            placeholder="Type your message..."
+        ></textarea>
+
+
+        <button id="sendBtn">
+            Send
+        </button>
+
+    </div>
+
+</div>
+
+
+<!-- =========================================
+     SOCKET.IO
+========================================== -->
+
+<script src="http://localhost:3000/socket.io/socket.io.js"></script>
+
+
+<!-- =========================================
+     MEETING JAVASCRIPT
+========================================== -->
+
+<script src="js/meeting.js"></script>
+
+</body>
+
+</html>
