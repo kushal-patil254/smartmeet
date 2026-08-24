@@ -1915,8 +1915,7 @@ function leaveMeeting() {
     // Host ends meeting
     if (isHost) {
 
-        fetch(
-            "http://localhost:3000/api/meetings/end/" +
+      fetch("https://smartmeet-production.up.railway.app/api/auth/login",  +
             encodeURIComponent(
                 meetingId
             ),

@@ -244,8 +244,7 @@ async function deleteMeeting(meetingId) {
     try {
 
         const response =
-            await fetch(
-                "http://localhost:3000/api/meetings/delete/" +
+            await fetch("https://smartmeet-production.up.railway.app/api/auth/login", +
                 encodeURIComponent(meetingId),
                 {
                     method: "DELETE"

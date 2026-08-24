@@ -132,8 +132,7 @@ async function createMeeting() {
         // ==============================
 
         const response =
-            await fetch(
-                "http://localhost:3000/api/meetings/create",
+            await fetch("https://smartmeet-production.up.railway.app/api/auth/login",
                 {
                     method: "POST",
 
