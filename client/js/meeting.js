@@ -2,7 +2,7 @@
 // SMARTMEET - MEETING.JS
 // ==========================================
 
-const socket = io("http://localhost:3000");
+const socket = io("https://smartmeet-production.up.railway.app");
 
 // ==========================================
 // MEETING DATA
@@ -1915,17 +1915,13 @@ function leaveMeeting() {
     // Host ends meeting
     if (isHost) {
 
-      fetch("https://smartmeet-production.up.railway.app/api/auth/login",  +
-            encodeURIComponent(
-                meetingId
-            ),
-            {
-
-                method:
-                    "PUT"
-
-            }
-        )
+    fetch(
+    "https://smartmeet-production.up.railway.app/api/meetings/end/" +
+    encodeURIComponent(meetingId),
+    {
+        method: "PUT"
+    }
+)
         .then(
             response =>
                 response.json()
