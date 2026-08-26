@@ -132,6 +132,16 @@ app.get(
 
     }
 );
+app.post("/api/test-create", (req, res) => {
+    console.log("TEST CREATE RECEIVED");
+    console.log("BODY:", req.body);
+
+    res.json({
+        success: true,
+        message: "POST request is working",
+        received: req.body
+    });
+});
 
 
 // ==========================================
