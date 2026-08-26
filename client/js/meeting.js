@@ -1863,106 +1863,74 @@ if (leaveBtn) {
 
 function leaveMeeting() {
 
-    clearInterval(
-        timerInterval
-    );
+    // Stop timer
+    if (timerInterval) {
+        clearInterval(timerInterval);
+    }
 
 
-    // Stop camera
+    // Stop camera and microphone
     if (localStream) {
 
         localStream
             .getTracks()
-            .forEach(
-                track => track.stop()
-            );
+            .forEach(track => track.stop());
 
-
-        localStream =
-            null;
-
+        localStream = null;
     }
 
 
-    // Close peer connections
-    Object.values(
-        peerConnections
-    ).forEach(
-        peer => {
+    // Close WebRTC connections
+    Object.values(peerConnections)
+        .forEach(peer => {
 
             try {
-
                 peer.close();
-
+            } catch (error) {
+                console.log(error);
             }
 
-            catch (error) {}
-
-        }
-    );
+        });
 
 
-    // Tell server
+    // Tell Socket.IO
     if (socket.connected) {
 
-        socket.emit(
-            "leave-meeting"
-        );
+        socket.emit("leave-meeting");
 
     }
 
 
-    // Host ends meeting
+    // ==========================================
+    // HOST
+    // ==========================================
+
     if (isHost) {
 
-    fetch(
-    "https://smartmeet-production.up.railway.app/api/meetings/end/" +
-    encodeURIComponent(meetingId),
-    {
-        method: "PUT"
-    }
-)
-        .then(
-            response =>
-                response.json()
-        )
-        .then(
-            data => {
-
-                console.log(
-                    "Meeting End:",
-                    data
-                );
-
-
-                finishLeaving();
-
+        // End meeting in database
+        fetch(
+            "https://smartmeet-production.up.railway.app/api/meetings/end/" +
+            encodeURIComponent(meetingId),
+            {
+                method: "PUT"
             }
         )
-        .catch(
-            error => {
-
-                console.error(
-                    "End Meeting Error:",
-                    error
-                );
-
-
-                // Even if server API fails,
-                // user should still be able to leave
-                finishLeaving();
-
-            }
-        );
+        .then(response => response.json())
+        .then(data => {
+            console.log("Meeting End:", data);
+        })
+        .catch(error => {
+            console.error("End Meeting Error:", error);
+        });
 
     }
 
-    else {
 
-        finishLeaving();
+    // ==========================================
+    // GO TO DASHBOARD IMMEDIATELY
+    // ==========================================
 
-    }
-
+    finishLeaving();
 }
 
 
