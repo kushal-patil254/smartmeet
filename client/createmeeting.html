@@ -4,7 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>SmartMeet - Create Meeting</title>
+
     <link rel="stylesheet" href="css/style.css">
 </head>
 
@@ -34,73 +36,156 @@
 
     <br><br>
 
-    <button id="createBtn">
+    <button id="createBtn" type="button">
         Create Meeting
     </button>
 
-    <div id="meetingDetails" style="display:none; margin-top:20px;">
+    <div
+        id="meetingDetails"
+        style="display:none; margin-top:20px;"
+    >
+
         <h3>Meeting Created Successfully</h3>
+
         <p id="showMeetingId"></p>
+
         <p id="showMeetingPassword"></p>
+
+        <button id="startMeetingBtn" type="button">
+            Start Meeting
+        </button>
+
     </div>
 
 </div>
 
+
 <script>
+
+const API_URL =
+    "https://smartmeet-production.up.railway.app";
+
+
+// ==========================================
+// CREATE MEETING
+// ==========================================
 
 async function createMeeting() {
 
     const meetingName =
-        document.getElementById("meetingName").value.trim();
+        document.getElementById("meetingName")
+        .value
+        .trim();
 
     const meetingPassword =
-        document.getElementById("meetingPassword").value.trim();
+        document.getElementById("meetingPassword")
+        .value
+        .trim();
 
     const meetingDuration =
-        document.getElementById("meetingDuration").value;
+        document.getElementById("meetingDuration")
+        .value;
+
+
+    // ==============================
+    // VALIDATION
+    // ==============================
 
     if (!meetingName) {
+
         alert("Please enter Meeting Name!");
+
         return;
     }
 
+
     if (!meetingPassword) {
+
         alert("Please enter Meeting Password!");
+
         return;
     }
+
+
+    // ==============================
+    // GENERATE MEETING ID
+    // ==============================
 
     const meetingId =
         Math.floor(
-            100000000 + Math.random() * 900000000
+            100000000 +
+            Math.random() * 900000000
         );
+
 
     const createBtn =
         document.getElementById("createBtn");
 
+
     createBtn.disabled = true;
-    createBtn.innerText = "Creating Meeting...";
+
+    createBtn.innerText =
+        "Creating Meeting...";
+
 
     try {
 
-        const response = await fetch(
-            "https://smartmeet-production.up.railway.app/api/meetings/create",
-            {
-                method: "POST",
+        // ==============================
+        // CREATE MEETING API
+        // ==============================
 
-                headers: {
-                    "Content-Type": "application/json"
-                },
+        const response =
+            await fetch(
+                API_URL +
+                "/api/meetings/create",
+                {
+                    method: "POST",
 
-                body: JSON.stringify({
-                    meetingId: meetingId,
-                    meetingName: meetingName,
-                    meetingPassword: meetingPassword,
-                    duration: meetingDuration
-                })
-            }
-        );
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
 
-        const data = await response.json();
+                    body: JSON.stringify({
+
+                        meetingId:
+                            meetingId,
+
+                        meetingName:
+                            meetingName,
+
+                        meetingPassword:
+                            meetingPassword,
+
+                        duration:
+                            meetingDuration
+
+                    })
+                }
+            );
+
+
+        // ==============================
+        // CHECK HTTP RESPONSE
+        // ==============================
+
+        if (!response.ok) {
+
+            throw new Error(
+                "Server returned HTTP " +
+                response.status
+            );
+
+        }
+
+
+        const data =
+            await response.json();
+
+
+        // ==============================
+        // API ERROR
+        // ==============================
 
         if (!data.success) {
 
@@ -109,11 +194,19 @@ async function createMeeting() {
                 "Unable to create meeting."
             );
 
-            createBtn.disabled = false;
-            createBtn.innerText = "Create Meeting";
+            createBtn.disabled =
+                false;
+
+            createBtn.innerText =
+                "Create Meeting";
 
             return;
         }
+
+
+        // ==============================
+        // SAVE MEETING DATA
+        // ==============================
 
         localStorage.setItem(
             "hostMeetingName",
@@ -122,7 +215,7 @@ async function createMeeting() {
 
         localStorage.setItem(
             "hostMeetingId",
-            meetingId
+            String(meetingId)
         );
 
         localStorage.setItem(
@@ -140,30 +233,130 @@ async function createMeeting() {
             "false"
         );
 
+        localStorage.setItem(
+            "joinedUser",
+            "Host"
+        );
+
+
+        // ==============================
+        // SAVE HISTORY
+        // ==============================
+
+        let history =
+            JSON.parse(
+                localStorage.getItem(
+                    "meetingHistory"
+                )
+            ) || [];
+
+
+        history.push({
+
+            name:
+                meetingName,
+
+            id:
+                meetingId,
+
+            password:
+                meetingPassword,
+
+            duration:
+                meetingDuration,
+
+            date:
+                new Date()
+                .toLocaleString()
+
+        });
+
+
+        localStorage.setItem(
+            "meetingHistory",
+            JSON.stringify(history)
+        );
+
+
+        // ==============================
+        // SHOW DETAILS
+        // ==============================
+
         document.getElementById(
             "meetingDetails"
-        ).style.display = "block";
+        ).style.display =
+            "block";
+
 
         document.getElementById(
             "showMeetingId"
         ).innerText =
-            "Meeting ID : " + meetingId;
+            "Meeting ID : " +
+            meetingId;
+
 
         document.getElementById(
             "showMeetingPassword"
         ).innerText =
-            "Password : " + meetingPassword;
+            "Password : " +
+            meetingPassword;
 
-        createBtn.remove();
 
-        const startBtn =
-            document.createElement("button");
+        createBtn.style.display =
+            "none";
 
-        startBtn.innerText = "Start Meeting";
 
-        startBtn.style.marginTop = "20px";
+        alert(
+            "Meeting Created Successfully!"
+        );
 
-        startBtn.onclick = function () {
+    }
+
+    catch (error) {
+
+        console.error(
+            "Create Meeting Error:",
+            error
+        );
+
+
+        alert(
+            "Unable to connect to SmartMeet server."
+        );
+
+
+        createBtn.disabled =
+            false;
+
+        createBtn.innerText =
+            "Create Meeting";
+
+    }
+
+}
+
+
+// ==========================================
+// CREATE BUTTON
+// ==========================================
+
+document
+    .getElementById("createBtn")
+    .addEventListener(
+        "click",
+        createMeeting
+    );
+
+
+// ==========================================
+// START MEETING
+// ==========================================
+
+document
+    .getElementById("startMeetingBtn")
+    .addEventListener(
+        "click",
+        function () {
 
             localStorage.setItem(
                 "meetingStarted",
@@ -177,48 +370,23 @@ async function createMeeting() {
 
             window.location.href =
                 "meeting.html";
-        };
 
-        document
-            .querySelector(".login-container")
-            .appendChild(startBtn);
-
-        alert("Meeting Created Successfully!");
-
-    } catch (error) {
-
-        console.error(
-            "Create Meeting Error:",
-            error
-        );
-
-        alert(
-            "Unable to connect to server."
-        );
-
-        createBtn.disabled = false;
-        createBtn.innerText = "Create Meeting";
-    }
-}
-
-
-// Connect button to function
-
-document
-    .getElementById("createBtn")
-    .addEventListener(
-        "click",
-        createMeeting
+        }
     );
 
 
-// Login protection
+// ==========================================
+// LOGIN CHECK
+// ==========================================
 
 if (
-    localStorage.getItem("isLoggedIn") !== "true"
+    localStorage.getItem(
+        "isLoggedIn"
+    ) !== "true"
 ) {
 
-    window.location.href = "login.html";
+    window.location.href =
+        "login.html";
 
 }
 
