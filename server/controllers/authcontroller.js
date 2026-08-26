@@ -1,56 +1,110 @@
 const db = require("../config/db");
 
-exports.register = (req, res) => {
+// ==========================================
+// REGISTER
+// ==========================================
 
-    const { fullname, email, password } = req.body;
+exports.register = async (req, res) => {
 
-    const sql = "INSERT INTO users (fullname, email, password) VALUES (?, ?, ?)";
+    try {
 
-    db.query(sql, [fullname, email, password], (err, result) => {
+        const { fullname, email, password } = req.body;
 
-        if (err) {
-            return res.status(500).json({
+        // Check required fields
+        if (!fullname || !email || !password) {
+            return res.status(400).json({
                 success: false,
-                message: err.message
+                message: "All fields are required"
             });
         }
 
-        res.json({
+        // Check if email already exists
+        const [existingUser] = await db.query(
+            "SELECT id FROM users WHERE email = ?",
+            [email]
+        );
+
+        if (existingUser.length > 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Email already registered"
+            });
+        }
+
+        // Insert user
+        await db.query(
+            "INSERT INTO users (fullname, email, password) VALUES (?, ?, ?)",
+            [fullname, email, password]
+        );
+
+        res.status(201).json({
             success: true,
             message: "User Registered Successfully"
         });
 
-    });
+    } catch (error) {
+
+        console.error("REGISTER DATABASE ERROR:", error);
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
 
 };
 
-exports.login = (req, res) => {
 
-    const { email, password } = req.body;
+// ==========================================
+// LOGIN
+// ==========================================
 
-    const sql = "SELECT * FROM users WHERE email=? AND password=?";
+exports.login = async (req, res) => {
 
-    db.query(sql, [email, password], (err, result) => {
+    try {
 
-        if (err) {
-            return res.status(500).json({
+        const { email, password } = req.body;
+
+        // Check required fields
+        if (!email || !password) {
+            return res.status(400).json({
                 success: false,
-                message: err.message
+                message: "Email and password are required"
             });
         }
 
+        // Find user
+        const [result] = await db.query(
+            "SELECT * FROM users WHERE email = ? AND password = ?",
+            [email, password]
+        );
+
         if (result.length > 0) {
+
             res.json({
                 success: true,
                 message: "Login Successful"
             });
+
         } else {
-            res.json({
+
+            res.status(401).json({
                 success: false,
                 message: "Invalid Email or Password"
             });
+
         }
 
-    });
+    } catch (error) {
+
+        console.error("LOGIN DATABASE ERROR:", error);
+
+        res.status(500).json({
+            success: false,
+            message: error.message
+        });
+
+    }
 
 };
