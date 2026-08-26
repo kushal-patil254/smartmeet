@@ -2,7 +2,6 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
 
     <meta
@@ -10,151 +9,66 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>SmartMeet Meeting</title>
+    <title>SmartMeet - Meeting</title>
 
-    <link
-        rel="stylesheet"
-        href="css/style.css"
-    >
-
-    <style>
-
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-        }
-
-        .meeting-container {
-            padding: 20px;
-            max-width: 1200px;
-            margin: auto;
-        }
-
-        .meeting-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .meeting-info {
-            margin: 10px 0;
-        }
-
-        .video-area {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        video {
-            width: 100%;
-            background: #111;
-            border-radius: 10px;
-            min-height: 250px;
-            object-fit: cover;
-        }
-
-        .controls {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-top: 20px;
-        }
-
-        .controls button {
-            padding: 12px 18px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-        .meeting-content {
-            display: grid;
-            grid-template-columns: 1fr 300px;
-            gap: 20px;
-            margin-top: 20px;
-        }
-
-        .side-panel {
-            border: 1px solid #ddd;
-            padding: 15px;
-            border-radius: 10px;
-        }
-
-        #messages {
-            height: 250px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            padding: 10px;
-        }
-
-        #chatBox {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 10px;
-            margin-top: 10px;
-        }
-
-        #sendBtn {
-            margin-top: 10px;
-            padding: 10px 15px;
-        }
-
-        .leave-btn {
-            background: #d32f2f;
-            color: white;
-        }
-
-        @media (max-width: 700px) {
-
-            .video-area {
-                grid-template-columns: 1fr;
-            }
-
-            .meeting-content {
-                grid-template-columns: 1fr;
-            }
-
-        }
-
-    </style>
-
+    <link rel="stylesheet" href="css/style.css">
 </head>
-
 
 <body>
 
-
 <div class="meeting-container">
 
+    <!-- =========================================
+         MAIN VIDEO SECTION
+    ========================================== -->
 
-    <!-- ================================= -->
-    <!-- HEADER -->
-    <!-- ================================= -->
+    <div class="video-section">
 
-    <div class="meeting-header">
+        <h2 id="meetingTitle">
+            SmartMeet
+        </h2>
 
-        <div>
 
-            <h1 id="meetingTitle">
-                SmartMeet Meeting
-            </h1>
+        <div class="meeting-info">
 
-            <div class="meeting-info">
+            <span>
+                ID:
+                <strong id="meetingId">-</strong>
+            </span>
 
-                <strong>
-                    Meeting ID:
-                </strong>
+            <span>
+                Time:
+                <strong id="timer">01:00:00</strong>
+            </span>
 
-                <span id="meetingId">
-                    -
+        </div>
+
+
+        <!-- =====================================
+             USER VIDEO AREA
+        ====================================== -->
+
+        <div id="userVideoArea">
+
+            <div id="userVideoContainer">
+
+                <!-- Remote participants will appear here -->
+
+            </div>
+
+
+            <div id="slideControls">
+
+                <button id="prevBtn">
+                    Previous
+                </button>
+
+                <span id="slideNumber">
+                    1
                 </span>
 
-                <button id="copyBtn">
-                    Copy ID
+                <button id="nextBtn">
+                    Next
                 </button>
 
             </div>
@@ -162,175 +76,119 @@
         </div>
 
 
-        <div>
+        <!-- =====================================
+             LOCAL VIDEO
+        ====================================== -->
 
-            <strong>
-                Time:
-            </strong>
-
-            <span id="timer">
-                00:00:00
-            </span>
-
-        </div>
-
-    </div>
+        <video
+            id="localVideo"
+            autoplay
+            muted
+            playsinline
+        ></video>
 
 
-    <!-- ================================= -->
-    <!-- VIDEO -->
-    <!-- ================================= -->
+        <!-- =====================================
+             REMOTE VIDEO
+        ====================================== -->
 
-    <div class="video-area">
-
-        <div>
-
-            <h3>
-                You
-            </h3>
-
-            <video
-                id="localVideo"
-                autoplay
-                muted
-                playsinline
-            ></video>
-
-        </div>
+        <video
+            id="remoteVideo"
+            autoplay
+            playsinline
+        ></video>
 
 
-        <div>
+        <!-- =====================================
+             CONTROL BAR
+        ====================================== -->
 
-            <h3>
-                Remote Participant
-            </h3>
+        <div class="control-bar">
 
-            <video
-                id="remoteVideo"
-                autoplay
-                playsinline
-            ></video>
+            <button id="cameraBtn">
+                🎥 Start Camera
+            </button>
 
-        </div>
+            <button id="micBtn">
+                🎤 Mic
+            </button>
 
-    </div>
+            <button id="screenBtn">
+                🖥 Screen Share
+            </button>
 
+            <button id="copyBtn">
+                🔗 Copy Meeting ID
+            </button>
 
-    <!-- ================================= -->
-    <!-- MULTIPLE USERS -->
-    <!-- ================================= -->
-
-    <div
-        id="userVideoContainer"
-        style="
-            display:flex;
-            flex-wrap:wrap;
-            gap:10px;
-            margin-top:15px;
-        "
-    >
-    </div>
-
-
-    <!-- ================================= -->
-    <!-- CONTROLS -->
-    <!-- ================================= -->
-
-    <div class="controls">
-
-        <button id="cameraBtn">
-            📷 Camera ON
-        </button>
-
-        <button id="micBtn">
-            🎤 Mic ON
-        </button>
-
-        <button id="screenBtn">
-            🖥 Screen Share
-        </button>
-
-        <button
-            id="leaveBtn"
-            class="leave-btn"
-        >
-            🚪 Leave Meeting
-        </button>
-
-    </div>
-
-
-    <!-- ================================= -->
-    <!-- CONTENT -->
-    <!-- ================================= -->
-
-    <div class="meeting-content">
-
-
-        <!-- ================================= -->
-        <!-- CHAT -->
-        <!-- ================================= -->
-
-        <div class="side-panel">
-
-            <h2>
-                💬 Chat
-            </h2>
-
-            <div id="messages">
-            </div>
-
-            <input
-                type="text"
-                id="chatBox"
-                placeholder="Type message..."
-            >
-
-            <button id="sendBtn">
-                Send
+            <button id="leaveBtn">
+                🚪 Leave Meeting
             </button>
 
         </div>
 
+    </div>
 
-        <!-- ================================= -->
-        <!-- PARTICIPANTS -->
-        <!-- ================================= -->
 
-        <div class="side-panel">
+    <!-- =========================================
+         RIGHT SIDE PANEL
+    ========================================== -->
 
-            <h2>
-                👥 Participants
-            </h2>
+    <div class="side-panel">
 
-            <div id="participants">
-                <p>
-                    No participants
-                </p>
-            </div>
+        <h2>
+            Participants
+        </h2>
+
+
+        <div id="participants">
+
+            <p>
+                Loading...
+            </p>
 
         </div>
 
 
-    </div>
+        <hr>
 
+
+        <h2>
+            Chat
+        </h2>
+
+
+        <div id="messages"></div>
+
+
+        <textarea
+            id="chatBox"
+            rows="3"
+            placeholder="Type your message..."
+        ></textarea>
+
+
+        <button id="sendBtn">
+            Send
+        </button>
+
+    </div>
 
 </div>
 
 
-<!-- ========================================= -->
-<!-- SOCKET.IO CLIENT - MUST COME FIRST -->
-<!-- ========================================= -->
+<!-- =========================================
+     SOCKET.IO CLIENT
+========================================== -->
 
 <script src="https://cdn.socket.io/4.8.1/socket.io.min.js"></script>
 
 
-<!-- ========================================= -->
-<!-- MEETING JAVASCRIPT -->
-<!-- ========================================= -->
+<!-- =========================================
+     MEETING JAVASCRIPT
+========================================== -->
 
 <script src="js/meeting.js"></script>
-
 
 </body>
 
