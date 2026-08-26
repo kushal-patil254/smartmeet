@@ -8,7 +8,7 @@ const db = require("../config/db");
 // CREATE MEETING
 // ==========================================
 
-router.post("/create", (req, res) => {
+router.post("/create", async (req, res) => {
 
     const {
         meetingId,
@@ -16,6 +16,7 @@ router.post("/create", (req, res) => {
         meetingPassword,
         duration
     } = req.body;
+
 
     if (
         !meetingId ||
@@ -45,38 +46,46 @@ router.post("/create", (req, res) => {
     `;
 
 
-    db.query(
-        sql,
-        [
-            meetingId,
-            meetingName,
-            meetingPassword,
-            duration
-        ],
-        (err, result) => {
+    try {
 
-            if (err) {
-
-                console.error(
-                    "Create Meeting Error:",
-                    err
-                );
-
-                return res.json({
-                    success: false,
-                    message: err.message
-                });
-
-            }
+        const [result] = await db.query(
+            sql,
+            [
+                meetingId,
+                meetingName,
+                meetingPassword,
+                duration
+            ]
+        );
 
 
-            res.json({
-                success: true,
-                message: "Meeting Created Successfully"
-            });
+        console.log(
+            "Meeting Created:",
+            meetingId
+        );
 
-        }
-    );
+
+        return res.json({
+            success: true,
+            message: "Meeting Created Successfully",
+            meetingId: meetingId
+        });
+
+
+    } catch (err) {
+
+        console.error(
+            "Create Meeting Error:",
+            err
+        );
+
+
+        return res.json({
+            success: false,
+            message: err.message
+        });
+
+    }
 
 });
 
@@ -85,7 +94,7 @@ router.post("/create", (req, res) => {
 // JOIN MEETING
 // ==========================================
 
-router.post("/join", (req, res) => {
+router.post("/join", async (req, res) => {
 
     const {
         meetingId,
@@ -116,50 +125,51 @@ router.post("/join", (req, res) => {
     `;
 
 
-    db.query(
-        sql,
-        [
-            meetingId,
-            meetingPassword
-        ],
-        (err, result) => {
+    try {
 
-            if (err) {
-
-                console.error(
-                    "Join Meeting Error:",
-                    err
-                );
-
-                return res.json({
-                    success: false,
-                    message: "Database error"
-                });
-
-            }
+        const [result] = await db.query(
+            sql,
+            [
+                meetingId,
+                meetingPassword
+            ]
+        );
 
 
-            if (
-                result.length === 0
-            ) {
+        if (
+            result.length === 0
+        ) {
 
-                return res.json({
-                    success: false,
-                    message:
-                        "Invalid Meeting ID, Password, or Meeting has ended"
-                });
-
-            }
-
-
-            res.json({
-                success: true,
-                message: "Meeting Found",
-                meeting: result[0]
+            return res.json({
+                success: false,
+                message:
+                    "Invalid Meeting ID, Password, or Meeting has ended"
             });
 
         }
-    );
+
+
+        return res.json({
+            success: true,
+            message: "Meeting Found",
+            meeting: result[0]
+        });
+
+
+    } catch (err) {
+
+        console.error(
+            "Join Meeting Error:",
+            err
+        );
+
+
+        return res.json({
+            success: false,
+            message: err.message
+        });
+
+    }
 
 });
 
@@ -168,7 +178,7 @@ router.post("/join", (req, res) => {
 // MEETING HISTORY
 // ==========================================
 
-router.get("/history", (req, res) => {
+router.get("/history", async (req, res) => {
 
     const sql = `
         SELECT
@@ -182,32 +192,32 @@ router.get("/history", (req, res) => {
     `;
 
 
-    db.query(
-        sql,
-        (err, result) => {
+    try {
 
-            if (err) {
-
-                console.error(
-                    "History Error:",
-                    err
-                );
-
-                return res.json({
-                    success: false,
-                    message: err.message
-                });
-
-            }
+        const [result] =
+            await db.query(sql);
 
 
-            res.json({
-                success: true,
-                meetings: result
-            });
+        return res.json({
+            success: true,
+            meetings: result
+        });
 
-        }
-    );
+
+    } catch (err) {
+
+        console.error(
+            "History Error:",
+            err
+        );
+
+
+        return res.json({
+            success: false,
+            message: err.message
+        });
+
+    }
 
 });
 
@@ -216,47 +226,39 @@ router.get("/history", (req, res) => {
 // END MEETING
 // ==========================================
 
-router.put("/end/:meetingId", (req, res) => {
+router.put(
+    "/end/:meetingId",
+    async (req, res) => {
 
-    const meetingId =
-        req.params.meetingId;
-
-
-    if (!meetingId) {
-
-        return res.json({
-            success: false,
-            message: "Meeting ID is required"
-        });
-
-    }
+        const meetingId =
+            req.params.meetingId;
 
 
-    const sql = `
-        UPDATE meetings
-        SET status = 'ended'
-        WHERE meeting_id = ?
-    `;
+        if (!meetingId) {
+
+            return res.json({
+                success: false,
+                message:
+                    "Meeting ID is required"
+            });
+
+        }
 
 
-    db.query(
-        sql,
-        [meetingId],
-        (err, result) => {
+        const sql = `
+            UPDATE meetings
+            SET status = 'ended'
+            WHERE meeting_id = ?
+        `;
 
-            if (err) {
 
-                console.error(
-                    "End Meeting Error:",
-                    err
+        try {
+
+            const [result] =
+                await db.query(
+                    sql,
+                    [meetingId]
                 );
-
-                return res.json({
-                    success: false,
-                    message: "Database error"
-                });
-
-            }
 
 
             if (
@@ -272,16 +274,30 @@ router.put("/end/:meetingId", (req, res) => {
             }
 
 
-            res.json({
+            return res.json({
                 success: true,
                 message:
                     "Meeting ended successfully"
             });
 
-        }
-    );
 
-});
+        } catch (err) {
+
+            console.error(
+                "End Meeting Error:",
+                err
+            );
+
+
+            return res.json({
+                success: false,
+                message: err.message
+            });
+
+        }
+
+    }
+);
 
 
 // ==========================================
@@ -290,7 +306,7 @@ router.put("/end/:meetingId", (req, res) => {
 
 router.delete(
     "/delete/:meetingId",
-    (req, res) => {
+    async (req, res) => {
 
         const meetingId =
             req.params.meetingId;
@@ -311,48 +327,49 @@ router.delete(
             "DELETE FROM meetings WHERE meeting_id = ?";
 
 
-        db.query(
-            sql,
-            [meetingId],
-            (err, result) => {
+        try {
 
-                if (err) {
-
-                    console.error(
-                        "Delete Meeting Error:",
-                        err
-                    );
-
-                    return res.json({
-                        success: false,
-                        message:
-                            err.message
-                    });
-
-                }
+            const [result] =
+                await db.query(
+                    sql,
+                    [meetingId]
+                );
 
 
-                if (
-                    result.affectedRows === 0
-                ) {
+            if (
+                result.affectedRows === 0
+            ) {
 
-                    return res.json({
-                        success: false,
-                        message:
-                            "Meeting not found"
-                    });
-
-                }
-
-
-                res.json({
-                    success: true,
+                return res.json({
+                    success: false,
                     message:
-                        "Meeting deleted successfully"
+                        "Meeting not found"
                 });
 
             }
-        );
+
+
+            return res.json({
+                success: true,
+                message:
+                    "Meeting deleted successfully"
+            });
+
+
+        } catch (err) {
+
+            console.error(
+                "Delete Meeting Error:",
+                err
+            );
+
+
+            return res.json({
+                success: false,
+                message: err.message
+            });
+
+        }
 
     }
 );
