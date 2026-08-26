@@ -38,7 +38,7 @@
 
     <br><br>
 
-    <button id="createBtn" type="button">
+    <button id="createBtn">
         Create Meeting
     </button>
 
@@ -47,13 +47,13 @@
         style="display:none; margin-top:20px;"
     >
 
-        <h3>Meeting Created Successfully ✅</h3>
+        <h3>Meeting Created Successfully</h3>
 
         <p id="showMeetingId"></p>
 
         <p id="showMeetingPassword"></p>
 
-        <button id="startMeetingBtn" type="button">
+        <button id="startMeetingBtn">
             Start Meeting
         </button>
 
@@ -71,37 +71,36 @@ const API_URL =
     "https://smartmeet-production.up.railway.app";
 
 
-// ==========================================
-// CREATE MEETING FUNCTION
-// ==========================================
-
 async function createMeeting() {
 
     console.log("CREATE BUTTON CLICKED");
 
+
     const meetingName =
         document
-        .getElementById("meetingName")
-        .value
-        .trim();
+            .getElementById("meetingName")
+            .value
+            .trim();
+
 
     const meetingPassword =
         document
-        .getElementById("meetingPassword")
-        .value
-        .trim();
+            .getElementById("meetingPassword")
+            .value
+            .trim();
 
-    const duration =
+
+    const meetingDuration =
         document
-        .getElementById("meetingDuration")
-        .value;
+            .getElementById("meetingDuration")
+            .value;
 
 
     // ======================================
     // VALIDATION
     // ======================================
 
-    if (meetingName === "") {
+    if (!meetingName) {
 
         alert("Please enter Meeting Name!");
 
@@ -110,7 +109,7 @@ async function createMeeting() {
     }
 
 
-    if (meetingPassword === "") {
+    if (!meetingPassword) {
 
         alert("Please enter Meeting Password!");
 
@@ -142,7 +141,9 @@ async function createMeeting() {
         );
 
 
-    createBtn.disabled = true;
+    createBtn.disabled =
+        true;
+
 
     createBtn.innerText =
         "Creating Meeting...";
@@ -168,8 +169,10 @@ async function createMeeting() {
                     method: "POST",
 
                     headers: {
+
                         "Content-Type":
                             "application/json"
+
                     },
 
                     body: JSON.stringify({
@@ -184,7 +187,7 @@ async function createMeeting() {
                             meetingPassword,
 
                         duration:
-                            duration
+                            meetingDuration
 
                     })
 
@@ -208,20 +211,17 @@ async function createMeeting() {
         );
 
 
-        // ==================================
-        // SERVER ERROR
-        // ==================================
-
         if (!data.success) {
 
             alert(
                 data.message ||
-                "Meeting creation failed!"
+                "Unable to create meeting."
             );
 
 
             createBtn.disabled =
                 false;
+
 
             createBtn.innerText =
                 "Create Meeting";
@@ -232,34 +232,39 @@ async function createMeeting() {
         }
 
 
-        // ==================================
-        // SAVE MEETING DATA
-        // ==================================
-
-        localStorage.setItem(
-            "hostMeetingId",
-            String(meetingId)
-        );
+        // ======================================
+        // SAVE DATA
+        // ======================================
 
         localStorage.setItem(
             "hostMeetingName",
             meetingName
         );
 
+
+        localStorage.setItem(
+            "hostMeetingId",
+            String(meetingId)
+        );
+
+
         localStorage.setItem(
             "hostMeetingPassword",
             meetingPassword
         );
 
+
         localStorage.setItem(
             "meetingDuration",
-            duration
+            meetingDuration
         );
+
 
         localStorage.setItem(
             "meetingStarted",
             "false"
         );
+
 
         localStorage.setItem(
             "joinedUser",
@@ -267,48 +272,9 @@ async function createMeeting() {
         );
 
 
-        // ==================================
-        // SAVE HISTORY
-        // ==================================
-
-        let history =
-            JSON.parse(
-                localStorage.getItem(
-                    "meetingHistory"
-                )
-            ) || [];
-
-
-        history.push({
-
-            name:
-                meetingName,
-
-            id:
-                meetingId,
-
-            password:
-                meetingPassword,
-
-            duration:
-                duration,
-
-            date:
-                new Date()
-                .toLocaleString()
-
-        });
-
-
-        localStorage.setItem(
-            "meetingHistory",
-            JSON.stringify(history)
-        );
-
-
-        // ==================================
+        // ======================================
         // SHOW DETAILS
-        // ==================================
+        // ======================================
 
         document.getElementById(
             "meetingDetails"
@@ -335,16 +301,10 @@ async function createMeeting() {
 
 
         alert(
-            "Meeting Created Successfully! ✅"
-        );
-
-
-        console.log(
-            "MEETING CREATED SUCCESSFULLY"
+            "Meeting Created Successfully!"
         );
 
     }
-
 
     catch (error) {
 
@@ -355,12 +315,14 @@ async function createMeeting() {
 
 
         alert(
-            "Server connection failed!"
+            "Server connection failed: " +
+            error.message
         );
 
 
         createBtn.disabled =
             false;
+
 
         createBtn.innerText =
             "Create Meeting";
@@ -371,18 +333,14 @@ async function createMeeting() {
 
 
 // ==========================================
-// CREATE BUTTON
+// BUTTON CLICK
 // ==========================================
 
 document
     .getElementById("createBtn")
     .addEventListener(
         "click",
-        function () {
-
-            createMeeting();
-
-        }
+        createMeeting
     );
 
 
@@ -401,10 +359,12 @@ document
                 "true"
             );
 
+
             localStorage.setItem(
                 "joinedUser",
                 "Host"
             );
+
 
             window.location.href =
                 "meeting.html";
