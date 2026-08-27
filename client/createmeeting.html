@@ -66,7 +66,6 @@
 
 console.log("CREATE MEETING SCRIPT LOADED");
 
-
 const API_URL =
     "https://smartmeet-production.up.railway.app";
 
@@ -75,20 +74,17 @@ async function createMeeting() {
 
     console.log("CREATE BUTTON CLICKED");
 
-
     const meetingName =
         document
             .getElementById("meetingName")
             .value
             .trim();
 
-
     const meetingPassword =
         document
             .getElementById("meetingPassword")
             .value
             .trim();
-
 
     const meetingDuration =
         document
@@ -105,7 +101,6 @@ async function createMeeting() {
         alert("Please enter Meeting Name!");
 
         return;
-
     }
 
 
@@ -114,7 +109,6 @@ async function createMeeting() {
         alert("Please enter Meeting Password!");
 
         return;
-
     }
 
 
@@ -141,62 +135,59 @@ async function createMeeting() {
         );
 
 
-    createBtn.disabled =
-        true;
-
+    createBtn.disabled = true;
 
     createBtn.innerText =
         "Creating Meeting...";
 
 
     // ======================================
-    // SEND REQUEST
+    // CREATE MEETING REQUEST
     // ======================================
-
-    console.log(
-        "Sending create meeting request..."
-    );
-    console.log("BEFORE FETCH");
-
-const response = await fetch(
-    "https://smartmeet-production.up.railway.app/api/meetings/create",
-    {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            meetingId: meetingId,
-            meetingName: meetingName,
-            meetingPassword: meetingPassword,
-            duration: meetingDuration
-        })
-    }
-);
-
-console.log("AFTER FETCH");
-console.log("STATUS:", response.status);
-
 
     try {
 
-      const response = await fetch(
-    "https://smartmeet-production.up.railway.app/api/meetings/create",
-    {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-            meetingId: meetingId,
-            meetingName: meetingName,
-            meetingPassword: meetingPassword,
-            duration: meetingDuration
-        })
-    }
-);
+        console.log(
+            "Sending create meeting request..."
+        );
 
-const data = await response.json();
+        const response =
+            await fetch(
+                API_URL +
+                "/api/meetings/create",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        meetingId:
+                            meetingId,
+
+                        meetingName:
+                            meetingName,
+
+                        meetingPassword:
+                            meetingPassword,
+
+                        duration:
+                            meetingDuration
+                    })
+                }
+            );
+
+
+        console.log(
+            "Response Status:",
+            response.status
+        );
+
+
+        const data =
+            await response.json();
 
 
         console.log(
@@ -216,13 +207,10 @@ const data = await response.json();
             createBtn.disabled =
                 false;
 
-
             createBtn.innerText =
                 "Create Meeting";
 
-
             return;
-
         }
 
 
@@ -267,7 +255,7 @@ const data = await response.json();
 
 
         // ======================================
-        // SHOW DETAILS
+        // SHOW MEETING DETAILS
         // ======================================
 
         document.getElementById(
@@ -300,6 +288,7 @@ const data = await response.json();
 
     }
 
+
     catch (error) {
 
         console.error(
@@ -327,7 +316,7 @@ const data = await response.json();
 
 
 // ==========================================
-// BUTTON CLICK
+// CREATE BUTTON
 // ==========================================
 
 document
@@ -385,4 +374,5 @@ if (
 </script>
 
 </body>
+
 </html>
