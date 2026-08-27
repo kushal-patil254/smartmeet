@@ -1,8 +1,26 @@
 // ==========================================
 // SMARTMEET - MEETING.JS
+// Railway + GitHub Pages + Mobile Support
 // ==========================================
 
-const socket = io("https://smartmeet-production.up.railway.app");
+const API_URL =
+    "https://smartmeet-production.up.railway.app";
+
+const SOCKET_URL =
+    "https://smartmeet-production.up.railway.app";
+
+
+// ==========================================
+// SOCKET.IO
+// ==========================================
+
+const socket = io(SOCKET_URL, {
+    transports: ["websocket", "polling"],
+    reconnection: true,
+    reconnectionAttempts: 10,
+    timeout: 20000
+});
+
 
 // ==========================================
 // MEETING DATA
@@ -21,7 +39,8 @@ const meetingPassword =
 
 const meetingDuration =
     parseInt(
-        localStorage.getItem("meetingDuration")
+        localStorage.getItem("meetingDuration"),
+        10
     ) || 60;
 
 
@@ -36,7 +55,8 @@ if (!userName) {
     userName = "Guest";
 }
 
-const isHost = userName === "Host";
+const isHost =
+    userName === "Host";
 
 
 // ==========================================
@@ -86,7 +106,9 @@ const messages =
     document.getElementById("messages");
 
 const userVideoContainer =
-    document.getElementById("userVideoContainer");
+    document.getElementById(
+        "userVideoContainer"
+    );
 
 
 // ==========================================
@@ -103,7 +125,7 @@ if (!meetingId) {
 
 
 // ==========================================
-// SHOW MEETING INFORMATION
+// SHOW MEETING INFO
 // ==========================================
 
 if (meetingTitle) {
@@ -131,6 +153,10 @@ let cameraOn = false;
 
 let micOn = false;
 
+let screenStream = null;
+
+let screenSharing = false;
+
 
 // ==========================================
 // WEBRTC
@@ -142,6 +168,11 @@ const pendingIceCandidates = {};
 
 const remoteUserNames = {};
 
+
+// ==========================================
+// STUN SERVER
+// ==========================================
+
 const rtcConfig = {
 
     iceServers: [
@@ -149,6 +180,11 @@ const rtcConfig = {
         {
             urls:
                 "stun:stun.l.google.com:19302"
+        },
+
+        {
+            urls:
+                "stun:stun1.l.google.com:19302"
         }
 
     ]
@@ -238,8 +274,9 @@ function createPeerConnection(
         function (event) {
 
             console.log(
-                "Remote video received from:",
-                targetSocketId
+                "Remote track received:",
+                targetSocketId,
+                event.track.kind
             );
 
 
@@ -305,7 +342,7 @@ function createPeerConnection(
         function () {
 
             console.log(
-                "Connection state:",
+                "Peer state:",
                 targetSocketId,
                 peer.connectionState
             );
@@ -317,8 +354,7 @@ function createPeerConnection(
             ) {
 
                 console.log(
-                    "WebRTC connection failed:",
-                    targetSocketId
+                    "Peer connection failed."
                 );
 
             }
@@ -326,7 +362,9 @@ function createPeerConnection(
 
             if (
                 peer.connectionState ===
-                "closed"
+                    "disconnected" ||
+                peer.connectionState ===
+                    "closed"
             ) {
 
                 removeRemoteUser(
@@ -398,7 +436,7 @@ async function addPendingIce(
         catch (error) {
 
             console.error(
-                "Pending ICE Error:",
+                "ICE pending error:",
                 error
             );
 
@@ -420,7 +458,7 @@ function showRemoteVideo(
 ) {
 
     // ======================================
-    // OLD REMOTE VIDEO
+    // MAIN REMOTE VIDEO
     // ======================================
 
     if (remoteVideo) {
@@ -434,11 +472,14 @@ function showRemoteVideo(
         remoteVideo.playsInline =
             true;
 
+        remoteVideo.controls =
+            false;
+
     }
 
 
     // ======================================
-    // USER VIDEO CONTAINER
+    // VIDEO CONTAINER
     // ======================================
 
     if (
@@ -482,6 +523,9 @@ function showRemoteVideo(
             true;
 
         video.playsInline =
+            true;
+
+        video.muted =
             true;
 
         video.className =
@@ -536,6 +580,33 @@ function showRemoteVideo(
         video.playsInline =
             true;
 
+        video.muted =
+            true;
+
+
+        const playPromise =
+            video.play();
+
+
+        if (
+            playPromise &&
+            typeof playPromise.catch ===
+                "function"
+        ) {
+
+            playPromise.catch(
+                error => {
+
+                    console.log(
+                        "Remote video autoplay:",
+                        error
+                    );
+
+                }
+            );
+
+        }
+
     }
 
 }
@@ -557,7 +628,11 @@ function removeRemoteUser(
 
     if (peer) {
 
-        peer.close();
+        try {
+            peer.close();
+        }
+
+        catch (error) {}
 
         delete peerConnections[
             socketId
@@ -600,29 +675,56 @@ function removeRemoteUser(
 
 
 // ==========================================
-// START CAMERA
+// START CAMERA + MIC
 // ==========================================
 
 async function startCamera() {
 
+    // Already started
     if (localStream) {
 
-        return;
+        return true;
+
+    }
+
+
+    if (
+        !navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia
+    ) {
+
+        alert(
+            "Camera/Microphone is not supported by this browser."
+        );
+
+        return false;
 
     }
 
 
     try {
 
+        console.log(
+            "Requesting camera and microphone..."
+        );
+
+
         localStream =
             await navigator.mediaDevices
                 .getUserMedia({
 
-                    video: true,
+                    video: {
+                        facingMode: "user"
+                    },
 
                     audio: true
 
                 });
+
+
+        console.log(
+            "Camera/Microphone permission granted."
+        );
 
 
         if (localVideo) {
@@ -639,34 +741,58 @@ async function startCamera() {
             localVideo.muted =
                 true;
 
+
+            const playPromise =
+                localVideo.play();
+
+
+            if (
+                playPromise &&
+                typeof playPromise.catch ===
+                    "function"
+            ) {
+
+                playPromise.catch(
+                    error => {
+
+                        console.log(
+                            "Local video play:",
+                            error
+                        );
+
+                    }
+                );
+
+            }
+
         }
 
 
         cameraOn =
-            true;
+            localStream
+                .getVideoTracks()
+                .some(
+                    track =>
+                        track.readyState ===
+                        "live"
+                );
+
 
         micOn =
-            true;
+            localStream
+                .getAudioTracks()
+                .some(
+                    track =>
+                        track.readyState ===
+                        "live"
+                );
 
 
-        if (cameraBtn) {
-
-            cameraBtn.innerText =
-                "📷 Camera ON";
-
-        }
-
-
-        if (micBtn) {
-
-            micBtn.innerText =
-                "🎤 Mic ON";
-
-        }
+        updateMediaButtons();
 
 
         // ==================================
-        // ADD TRACKS TO EXISTING CONNECTIONS
+        // ADD TRACKS TO EXISTING PEERS
         // ==================================
 
         Object.values(
@@ -674,27 +800,33 @@ async function startCamera() {
         ).forEach(
             peer => {
 
-                const senders =
-                    peer.getSenders();
-
-
                 localStream
                     .getTracks()
                     .forEach(
                         track => {
 
-                            const alreadyAdded =
-                                senders.some(
-                                    sender =>
-                                        sender.track &&
-                                        sender.track.kind ===
-                                        track.kind
+                            const senders =
+                                peer.getSenders();
+
+
+                            const sender =
+                                senders.find(
+                                    item =>
+                                        item.track &&
+                                        item.track.kind ===
+                                            track.kind
                                 );
 
 
-                            if (
-                                !alreadyAdded
-                            ) {
+                            if (sender) {
+
+                                sender.replaceTrack(
+                                    track
+                                );
+
+                            }
+
+                            else {
 
                                 peer.addTrack(
                                     track,
@@ -711,18 +843,24 @@ async function startCamera() {
 
 
         console.log(
-            "Camera started"
+            "Local media ready."
         );
+
+
+        return true;
 
     }
 
     catch (error) {
 
         console.error(
-            "Camera Error:",
+            "Camera/Microphone Error:",
             error
         );
 
+
+        localStream =
+            null;
 
         cameraOn =
             false;
@@ -731,25 +869,80 @@ async function startCamera() {
             false;
 
 
-        if (cameraBtn) {
+        updateMediaButtons();
 
-            cameraBtn.innerText =
-                "📷 Camera OFF";
+
+        if (
+            error.name ===
+            "NotAllowedError"
+        ) {
+
+            alert(
+                "Camera/Microphone permission denied. Please allow Camera and Microphone in browser settings and try again."
+            );
+
+        }
+
+        else if (
+            error.name ===
+            "NotFoundError"
+        ) {
+
+            alert(
+                "Camera or Microphone not found on this device."
+            );
+
+        }
+
+        else {
+
+            alert(
+                "Unable to start Camera/Microphone: " +
+                error.message
+            );
 
         }
 
 
-        if (micBtn) {
+        return false;
 
-            micBtn.innerText =
-                "🔇 Mic OFF";
+    }
 
-        }
+}
 
 
-        alert(
-            "Camera/Microphone permission मिळाली नाही."
-        );
+// ==========================================
+// MEDIA BUTTON UI
+// ==========================================
+
+function updateMediaButtons() {
+
+    if (cameraBtn) {
+
+        cameraBtn.innerText =
+            cameraOn
+                ? "📷 Camera ON"
+                : "🚫 Camera OFF";
+
+    }
+
+
+    if (micBtn) {
+
+        micBtn.innerText =
+            micOn
+                ? "🎤 Mic ON"
+                : "🔇 Mic OFF";
+
+    }
+
+
+    if (screenBtn) {
+
+        screenBtn.innerText =
+            screenSharing
+                ? "🛑 Stop Share"
+                : "🖥 Screen Share";
 
     }
 
@@ -766,6 +959,7 @@ if (cameraBtn) {
         "click",
         async function () {
 
+            // First click = start camera
             if (!localStream) {
 
                 await startCamera();
@@ -783,6 +977,8 @@ if (cameraBtn) {
             if (
                 tracks.length === 0
             ) {
+
+                await startCamera();
 
                 return;
 
@@ -803,10 +999,7 @@ if (cameraBtn) {
             );
 
 
-            cameraBtn.innerText =
-                cameraOn
-                    ? "📷 Camera ON"
-                    : "🚫 Camera OFF";
+            updateMediaButtons();
 
         }
     );
@@ -824,6 +1017,7 @@ if (micBtn) {
         "click",
         async function () {
 
+            // First click = start media
             if (!localStream) {
 
                 await startCamera();
@@ -841,6 +1035,8 @@ if (micBtn) {
             if (
                 tracks.length === 0
             ) {
+
+                await startCamera();
 
                 return;
 
@@ -861,10 +1057,7 @@ if (micBtn) {
             );
 
 
-            micBtn.innerText =
-                micOn
-                    ? "🎤 Mic ON"
-                    : "🔇 Mic OFF";
+            updateMediaButtons();
 
         }
     );
@@ -873,25 +1066,56 @@ if (micBtn) {
 
 
 // ==========================================
-// JOIN MEETING
+// SOCKET CONNECT
 // ==========================================
 
-socket.emit(
-    "join-meeting",
-    {
+socket.on(
+    "connect",
+    function () {
 
-        meetingId:
-            meetingId,
+        console.log(
+            "Connected to SmartMeet:",
+            socket.id
+        );
 
-        userName:
-            userName
+
+        // Join only after Socket.IO connection
+        socket.emit(
+            "join-meeting",
+            {
+
+                meetingId:
+                    meetingId,
+
+                userName:
+                    userName
+
+            }
+        );
 
     }
 );
 
 
 // ==========================================
-// PARTICIPANT UPDATE
+// SOCKET CONNECT ERROR
+// ==========================================
+
+socket.on(
+    "connect_error",
+    function (error) {
+
+        console.error(
+            "Socket connection error:",
+            error
+        );
+
+    }
+);
+
+
+// ==========================================
+// PARTICIPANTS
 // ==========================================
 
 socket.on(
@@ -962,8 +1186,6 @@ socket.on(
 
     }
 );
-
-
 // ==========================================
 // USER JOINED
 // ==========================================
@@ -988,19 +1210,11 @@ socket.on(
         }
 
 
-        // Wait until camera is available
-        if (!localStream) {
-
-            console.log(
-                "Waiting for local camera..."
-            );
-
-            await startCamera();
-
-        }
-
-
         try {
+
+            // Existing user creates offer.
+            // Camera is NOT forced automatically;
+            // user can start it using Camera button.
 
             const peer =
                 createPeerConnection(
@@ -1033,8 +1247,7 @@ socket.on(
 
 
             console.log(
-                "Offer sent to:",
-                data.socketId
+                "Offer sent."
             );
 
         }
@@ -1042,7 +1255,7 @@ socket.on(
         catch (error) {
 
             console.error(
-                "Offer Error:",
+                "Offer error:",
                 error
             );
 
@@ -1050,8 +1263,6 @@ socket.on(
 
     }
 );
-
-
 // ==========================================
 // RECEIVE OFFER
 // ==========================================
@@ -1077,13 +1288,6 @@ socket.on(
 
 
         try {
-
-            if (!localStream) {
-
-                await startCamera();
-
-            }
-
 
             const peer =
                 createPeerConnection(
@@ -1128,8 +1332,7 @@ socket.on(
 
 
             console.log(
-                "Answer sent to:",
-                data.fromSocketId
+                "Answer sent."
             );
 
         }
@@ -1145,8 +1348,6 @@ socket.on(
 
     }
 );
-
-
 // ==========================================
 // RECEIVE ANSWER
 // ==========================================
@@ -1154,12 +1355,6 @@ socket.on(
 socket.on(
     "webrtc-answer",
     async function (data) {
-
-        console.log(
-            "Answer received:",
-            data
-        );
-
 
         if (
             !data ||
@@ -1180,10 +1375,6 @@ socket.on(
 
 
             if (!peer) {
-
-                console.log(
-                    "Peer not found for answer"
-                );
 
                 return;
 
@@ -1206,7 +1397,7 @@ socket.on(
         catch (error) {
 
             console.error(
-                "Answer Error:",
+                "Answer error:",
                 error
             );
 
@@ -1252,7 +1443,6 @@ socket.on(
         }
 
 
-        // Remote description not ready
         if (
             !peer.remoteDescription ||
             !peer.remoteDescription.type
@@ -1296,7 +1486,7 @@ socket.on(
         catch (error) {
 
             console.error(
-                "ICE Error:",
+                "ICE error:",
                 error
             );
 
@@ -1304,84 +1494,10 @@ socket.on(
 
     }
 );
-
-// ==========================================
-// MEETING ENDED BY HOST
-// ==========================================
-
-socket.on(
-    "meeting-ended",
-    function (data) {
-
-        console.log(
-            "Meeting ended:",
-            data
-        );
-
-        alert(
-            data?.message ||
-            "Host has ended the meeting."
-        );
-
-        // Stop timer
-        clearInterval(
-            timerInterval
-        );
-
-        // Stop camera and microphone
-        if (localStream) {
-
-            localStream
-                .getTracks()
-                .forEach(
-                    track => track.stop()
-                );
-
-            localStream = null;
-        }
-
-        // Close WebRTC connections
-        Object.values(
-            peerConnections
-        ).forEach(
-            peer => {
-
-                try {
-                    peer.close();
-                }
-
-                catch (error) {}
-            }
-        );
-
-        // Clear meeting data
-        localStorage.removeItem(
-            "meetingStarted"
-        );
-
-        localStorage.removeItem(
-            "joinedUser"
-        );
-
-        // Disconnect socket
-        try {
-
-            socket.disconnect();
-
-        }
-
-        catch (error) {}
-
-        // Go to dashboard
-        window.location.href =
-            "dashboard.html";
-
-    }
-);
-
 // ==========================================
 // USER LEFT
-// ====================
+// ==========================================
+
 socket.on(
     "user-left",
     function (data) {
@@ -1396,12 +1512,6 @@ socket.on(
         }
 
 
-        console.log(
-            "User left:",
-            data.userName
-        );
-
-
         removeRemoteUser(
             data.socketId
         );
@@ -1409,20 +1519,38 @@ socket.on(
     }
 );
 
+
 // ==========================================
-// HOST ENDED MEETING
+// MEETING ENDED
 // ==========================================
+
+let meetingEndedHandled =
+    false;
+
 
 socket.on(
     "meeting-ended",
     function (data) {
 
+        if (
+            meetingEndedHandled
+        ) {
+
+            return;
+
+        }
+
+
+        meetingEndedHandled =
+            true;
+
+
         console.log(
-            "Meeting ended by host:",
+            "Meeting ended:",
             data
         );
 
-        // Stop timer
+
         if (timerInterval) {
 
             clearInterval(
@@ -1431,19 +1559,10 @@ socket.on(
 
         }
 
-        // Stop camera and microphone
-        if (localStream) {
 
-            localStream
-                .getTracks()
-                .forEach(
-                    track => track.stop()
-                );
+        stopAllMedia();
 
-            localStream = null;
-        }
 
-        // Close peer connections
         Object.values(
             peerConnections
         ).forEach(
@@ -1452,45 +1571,44 @@ socket.on(
                 try {
                     peer.close();
                 }
-                catch (error) {
-                    console.log(error);
-                }
+
+                catch (error) {}
 
             }
         );
 
-        // Disconnect socket
+
         try {
 
             socket.disconnect();
 
         }
-        catch (error) {
 
-            console.log(error);
+        catch (error) {}
 
-        }
 
-        // Clear local meeting data
         localStorage.removeItem(
             "meetingStarted"
         );
+
 
         localStorage.removeItem(
             "joinedUser"
         );
 
-        // Tell user
+
         alert(
+            data?.message ||
             "Host has ended the meeting."
         );
 
-        // Go dashboard
+
         window.location.href =
             "dashboard.html";
 
     }
 );
+
 
 // ==========================================
 // CHAT SEND
@@ -1510,6 +1628,17 @@ function sendMessage() {
 
 
     if (!message) {
+
+        return;
+
+    }
+
+
+    if (!socket.connected) {
+
+        alert(
+            "Chat server is not connected."
+        );
 
         return;
 
@@ -1570,8 +1699,6 @@ if (chatBox) {
     );
 
 }
-
-
 // ==========================================
 // RECEIVE CHAT
 // ==========================================
@@ -1613,7 +1740,7 @@ socket.on(
 
 
         strong.innerText =
-            data.userName +
+            (data.userName || "Guest") +
             ": ";
 
 
@@ -1624,7 +1751,7 @@ socket.on(
 
         div.appendChild(
             document.createTextNode(
-                data.message
+                data.message || ""
             )
         );
 
@@ -1653,10 +1780,43 @@ if (copyBtn) {
 
             try {
 
-                await navigator.clipboard
-                    .writeText(
-                        String(meetingId)
+                const text =
+                    String(meetingId);
+
+
+                if (
+                    navigator.clipboard &&
+                    window.isSecureContext
+                ) {
+
+                    await navigator.clipboard
+                        .writeText(text);
+
+                }
+
+                else {
+
+                    const temp =
+                        document.createElement(
+                            "input"
+                        );
+
+                    temp.value =
+                        text;
+
+                    document.body.appendChild(
+                        temp
                     );
+
+                    temp.select();
+
+                    document.execCommand(
+                        "copy"
+                    );
+
+                    temp.remove();
+
+                }
 
 
                 alert(
@@ -1678,6 +1838,7 @@ if (copyBtn) {
 
 }
 
+
 // ==========================================
 // TIMER
 // ==========================================
@@ -1685,8 +1846,8 @@ if (copyBtn) {
 let remainingSeconds =
     meetingDuration * 60;
 
-
-let timerInterval;
+let timerInterval =
+    null;
 
 
 function updateTimer() {
@@ -1715,17 +1876,11 @@ function updateTimer() {
 
 
     timerElement.innerText =
-
-        String(hours)
-            .padStart(2, "0")
-        + ":" +
-
-        String(minutes)
-            .padStart(2, "0")
-        + ":" +
-
-        String(seconds)
-            .padStart(2, "0");
+        String(hours).padStart(2, "0") +
+        ":" +
+        String(minutes).padStart(2, "0") +
+        ":" +
+        String(seconds).padStart(2, "0");
 
 
     if (
@@ -1757,8 +1912,6 @@ timerInterval =
         updateTimer,
         1000
     );
-
-
 // ==========================================
 // SCREEN SHARE
 // ==========================================
@@ -1769,13 +1922,39 @@ if (screenBtn) {
         "click",
         async function () {
 
+            // Stop screen sharing
+            if (screenSharing) {
+
+                stopScreenShare();
+
+                return;
+
+            }
+
+
+            if (
+                !navigator.mediaDevices ||
+                !navigator.mediaDevices.getDisplayMedia
+            ) {
+
+                alert(
+                    "Screen sharing is not supported by this mobile browser. Please use a supported desktop browser."
+                );
+
+                return;
+
+            }
+
+
             try {
 
-                const screenStream =
+                screenStream =
                     await navigator.mediaDevices
                         .getDisplayMedia({
 
-                            video: true
+                            video: true,
+
+                            audio: false
 
                         });
 
@@ -1785,6 +1964,24 @@ if (screenBtn) {
                         .getVideoTracks()[0];
 
 
+                if (!screenTrack) {
+
+                    return;
+
+                }
+
+
+                screenSharing =
+                    true;
+
+
+                updateMediaButtons();
+
+
+                // ==================================
+                // SHOW SCREEN LOCALLY
+                // ==================================
+
                 if (localVideo) {
 
                     localVideo.srcObject =
@@ -1793,28 +1990,74 @@ if (screenBtn) {
                 }
 
 
-                screenTrack.onended =
-                    function () {
+                // ==================================
+                // SEND SCREEN TRACK TO PEERS
+                // ==================================
 
-                        if (
-                            localStream &&
-                            localVideo
-                        ) {
+                Object.values(
+                    peerConnections
+                ).forEach(
+                    async peer => {
 
-                            localVideo.srcObject =
-                                localStream;
+                        const sender =
+                            peer.getSenders()
+                                .find(
+                                    item =>
+                                        item.track &&
+                                        item.track.kind ===
+                                            "video"
+                                );
+
+
+                        if (sender) {
+
+                            try {
+
+                                await sender
+                                    .replaceTrack(
+                                        screenTrack
+                                    );
+
+                            }
+
+                            catch (error) {
+
+                                console.error(
+                                    "Screen replace error:",
+                                    error
+                                );
+
+                            }
 
                         }
 
+                    }
+                );
+
+
+                screenTrack.onended =
+                    function () {
+
+                        stopScreenShare();
+
                     };
+
 
             }
 
             catch (error) {
 
                 console.log(
-                    "Screen share cancelled"
+                    "Screen share error:",
+                    error
                 );
+
+
+                screenSharing =
+                    false;
+
+
+                updateMediaButtons();
 
             }
 
@@ -1825,6 +2068,118 @@ if (screenBtn) {
 
 
 // ==========================================
+// STOP SCREEN SHARE
+// ==========================================
+
+async function stopScreenShare() {
+
+    if (!screenSharing) {
+
+        return;
+
+    }
+
+
+    screenSharing =
+        false;
+
+
+    if (screenStream) {
+
+        screenStream
+            .getTracks()
+            .forEach(
+                track => {
+
+                    try {
+                        track.stop();
+                    }
+
+                    catch (error) {}
+
+                }
+            );
+
+        screenStream =
+            null;
+
+    }
+
+
+    // ======================================
+    // RESTORE CAMERA
+    // ======================================
+
+    if (localStream) {
+
+        const cameraTrack =
+            localStream
+                .getVideoTracks()[0];
+
+
+        if (cameraTrack) {
+
+            cameraTrack.enabled =
+                cameraOn;
+
+
+            if (localVideo) {
+
+                localVideo.srcObject =
+                    localStream;
+
+            }
+
+
+            Object.values(
+                peerConnections
+            ).forEach(
+                async peer => {
+
+                    const sender =
+                        peer.getSenders()
+                            .find(
+                                item =>
+                                    item.track &&
+                                    item.track.kind ===
+                                        "video"
+                            );
+
+
+                    if (sender) {
+
+                        try {
+
+                            await sender
+                                .replaceTrack(
+                                    cameraTrack
+                                );
+
+                        }
+
+                        catch (error) {
+
+                            console.error(
+                                "Camera restore error:",
+                                error
+                            );
+
+                        }
+
+                    }
+
+                }
+            );
+
+        }
+
+    }
+
+
+    updateMediaButtons();
+
+}
+// ==========================================
 // LEAVE BUTTON
 // ==========================================
 
@@ -1834,12 +2189,14 @@ if (leaveBtn) {
         "click",
         function () {
 
+            const message =
+                isHost
+                    ? "Are you sure you want to end this meeting?"
+                    : "Are you sure you want to leave the meeting?";
+
+
             const confirmLeave =
-                confirm(
-                    isHost
-                        ? "Are you sure you want to end this meeting?"
-                        : "Are you sure you want to leave the meeting?"
-                );
+                confirm(message);
 
 
             if (!confirmLeave) {
@@ -1858,79 +2215,169 @@ if (leaveBtn) {
 
 
 // ==========================================
+// STOP ALL MEDIA
+// ==========================================
+
+function stopAllMedia() {
+
+    if (screenStream) {
+
+        screenStream
+            .getTracks()
+            .forEach(
+                track => {
+
+                    try {
+                        track.stop();
+                    }
+
+                    catch (error) {}
+
+                }
+            );
+
+        screenStream =
+            null;
+
+    }
+
+
+    if (localStream) {
+
+        localStream
+            .getTracks()
+            .forEach(
+                track => {
+
+                    try {
+                        track.stop();
+                    }
+
+                    catch (error) {}
+
+                }
+            );
+
+        localStream =
+            null;
+
+    }
+
+
+    cameraOn =
+        false;
+
+    micOn =
+        false;
+
+    screenSharing =
+        false;
+
+
+    updateMediaButtons();
+
+}
+
+
+// ==========================================
 // LEAVE MEETING
 // ==========================================
 
 function leaveMeeting() {
 
-    // Stop timer
-    if (timerInterval) {
-        clearInterval(timerInterval);
+    if (
+        timerInterval
+    ) {
+
+        clearInterval(
+            timerInterval
+        );
+
     }
 
 
-    // Stop camera and microphone
-    if (localStream) {
-
-        localStream
-            .getTracks()
-            .forEach(track => track.stop());
-
-        localStream = null;
-    }
+    stopAllMedia();
 
 
-    // Close WebRTC connections
-    Object.values(peerConnections)
-        .forEach(peer => {
+    Object.values(
+        peerConnections
+    ).forEach(
+        peer => {
 
             try {
                 peer.close();
-            } catch (error) {
-                console.log(error);
             }
 
-        });
+            catch (error) {}
+
+        }
+    );
 
 
-    // Tell Socket.IO
-    if (socket.connected) {
+    // ======================================
+    // TELL SOCKET SERVER
+    // ======================================
 
-        socket.emit("leave-meeting");
+    if (
+        socket.connected
+    ) {
+
+        socket.emit(
+            "leave-meeting"
+        );
 
     }
 
 
-    // ==========================================
-    // HOST
-    // ==========================================
+    // ======================================
+    // HOST END DATABASE MEETING
+    // ======================================
 
     if (isHost) {
 
-        // End meeting in database
         fetch(
-            "https://smartmeet-production.up.railway.app/api/meetings/end/" +
-            encodeURIComponent(meetingId),
+            API_URL +
+            "/api/meetings/end/" +
+            encodeURIComponent(
+                meetingId
+            ),
             {
-                method: "PUT"
+
+                method:
+                    "PUT"
+
             }
         )
-        .then(response => response.json())
-        .then(data => {
-            console.log("Meeting End:", data);
-        })
-        .catch(error => {
-            console.error("End Meeting Error:", error);
-        });
+        .then(
+            response =>
+                response.json()
+        )
+        .then(
+            data => {
+
+                console.log(
+                    "Meeting ended:",
+                    data
+                );
+
+            }
+        )
+        .catch(
+            error => {
+
+                console.error(
+                    "End meeting error:",
+                    error
+                );
+
+            }
+        );
 
     }
 
 
-    // ==========================================
-    // GO TO DASHBOARD IMMEDIATELY
-    // ==========================================
-
     finishLeaving();
+
 }
 
 
@@ -1943,7 +2390,8 @@ function endMeeting() {
     if (isHost) {
 
         fetch(
-            "http://localhost:3000/api/meetings/end/" +
+            API_URL +
+            "/api/meetings/end/" +
             encodeURIComponent(
                 meetingId
             ),
@@ -1955,14 +2403,21 @@ function endMeeting() {
             }
         )
         .then(
-            () => {
+            response =>
+                response.json()
+        )
+        .catch(
+            error => {
 
-                finishLeaving();
+                console.error(
+                    "Timer end error:",
+                    error
+                );
 
             }
         )
-        .catch(
-            () => {
+        .finally(
+            function () {
 
                 finishLeaving();
 
@@ -1986,17 +2441,16 @@ function endMeeting() {
 
 function finishLeaving() {
 
+    stopAllMedia();
+
+
     try {
 
         socket.disconnect();
 
     }
 
-    catch (error) {
-
-        console.log(error);
-
-    }
+    catch (error) {}
 
 
     localStorage.removeItem(
@@ -2016,36 +2470,28 @@ function finishLeaving() {
 
 
 // ==========================================
-// SOCKET CONNECT
+// PAGE CLOSE / BACK
 // ==========================================
 
-socket.on(
-    "connect",
+window.addEventListener(
+    "beforeunload",
     function () {
 
-        console.log(
-            "Connected to SmartMeet:",
-            socket.id
-        );
+        if (
+            socket.connected
+        ) {
+
+            socket.emit(
+                "leave-meeting"
+            );
+
+        }
 
     }
 );
 
 
-// ==========================================
-// SOCKET ERROR
-// ==========================================
-
-socket.on(
-    "connect_error",
-    function (error) {
-
-        console.error(
-            "Socket Connection Error:",
-            error
-        );
-
-    }
+console.log(
+    "SmartMeet meeting.js loaded successfully."
 );
-
 
