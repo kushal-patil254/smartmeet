@@ -1,41 +1,62 @@
 // ==========================================
-// MOBILE LANDSCAPE MODE - MEETING PAGE ONLY
+// SMARTMEET - MEETING PAGE LANDSCAPE
 // ==========================================
 
-async function enableMeetingLandscape() {
+function enableMeetingLandscape() {
 
-    // Mobile/Tablet only
-    if (window.innerWidth > 800) {
-        return;
-    }
+    if (window.innerWidth <= 800) {
 
-    try {
+        try {
 
-        // Android browsers/WebView that support screen orientation
-        if (screen.orientation && screen.orientation.lock) {
+            if (
+                screen.orientation &&
+                screen.orientation.lock
+            ) {
 
-            await screen.orientation.lock("landscape");
+                screen.orientation
+                    .lock("landscape")
+                    .then(() => {
 
-            console.log("SmartMeet: Landscape locked");
+                        console.log(
+                            "SmartMeet: Landscape enabled"
+                        );
+
+                    })
+                    .catch(error => {
+
+                        console.log(
+                            "Landscape lock not supported:",
+                            error
+                        );
+
+                    });
+
+            }
+
+        } catch (error) {
+
+            console.log(
+                "Landscape error:",
+                error
+            );
 
         }
-
-    } catch (error) {
-
-        console.log(
-            "Landscape lock not supported by this browser:",
-            error
-        );
-
     }
 }
 
 
-// Try when meeting page loads
-enableMeetingLandscape();
+// Run when meeting page loads
+window.addEventListener(
+    "load",
+    function () {
+
+        enableMeetingLandscape();
+
+    }
+);
 
 
-// Try again after user interaction
+// Try after first user interaction
 document.addEventListener(
     "click",
     function () {
@@ -45,7 +66,6 @@ document.addEventListener(
     },
     { once: true }
 );
-
 
 
 // ==========================================
