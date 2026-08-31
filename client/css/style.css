@@ -2490,4 +2490,98 @@ body,
     cursor: pointer;
 }
 
+/* ==========================================
+   CREATE MEETING - MOBILE FIX
+========================================== */
 
+body:has(#meetingDetails) {
+    min-height: 100vh;
+    height: auto;
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 0;
+}
+
+body:has(#meetingDetails) .login-container {
+    width: 420px;
+    max-width: calc(100% - 30px);
+    margin: 20px auto;
+}
+
+#meetingDetails {
+    width: 100%;
+    margin-top: 25px !important;
+    padding: 20px;
+    background: #111d31;
+    border: 1px solid #2d405c;
+    border-radius: 14px;
+}
+
+#meetingDetails h3 {
+    margin-bottom: 15px;
+    color: #60a5fa;
+    font-size: 18px;
+}
+
+#meetingDetails p {
+    margin: 10px 0;
+    color: #dbeafe;
+    font-size: 14px;
+    word-break: break-word;
+}
+
+#startMeetingBtn {
+    width: 100%;
+    height: 50px;
+    margin-top: 15px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+#startMeetingBtn:hover {
+    background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+
+/* ---------- MOBILE ---------- */
+
+@media (max-width: 600px) {
+
+    body:has(#meetingDetails) {
+        padding: 15px 0;
+        align-items: flex-start;
+    }
+
+    body:has(#meetingDetails) .login-container {
+        width: calc(100% - 24px);
+        max-width: 420px;
+        margin: 15px auto;
+        padding: 30px 20px;
+    }
+
+    body:has(#meetingDetails) .login-container h1 {
+        font-size: 28px;
+    }
+
+    body:has(#meetingDetails) .login-container h2 {
+        font-size: 20px;
+        margin-bottom: 22px;
+    }
+
+    body:has(#meetingDetails) #meetingDetails {
+        padding: 18px 15px;
+    }
+
+    body:has(#meetingDetails) #startMeetingBtn {
+        height: 52px;
+        font-size: 16px;
+    }
+}
