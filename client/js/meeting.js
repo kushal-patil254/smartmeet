@@ -1,4 +1,54 @@
 // ==========================================
+// MOBILE LANDSCAPE MODE - MEETING PAGE ONLY
+// ==========================================
+
+async function enableMeetingLandscape() {
+
+    // Mobile/Tablet only
+    if (window.innerWidth > 800) {
+        return;
+    }
+
+    try {
+
+        // Android browsers/WebView that support screen orientation
+        if (screen.orientation && screen.orientation.lock) {
+
+            await screen.orientation.lock("landscape");
+
+            console.log("SmartMeet: Landscape locked");
+
+        }
+
+    } catch (error) {
+
+        console.log(
+            "Landscape lock not supported by this browser:",
+            error
+        );
+
+    }
+}
+
+
+// Try when meeting page loads
+enableMeetingLandscape();
+
+
+// Try again after user interaction
+document.addEventListener(
+    "click",
+    function () {
+
+        enableMeetingLandscape();
+
+    },
+    { once: true }
+);
+
+
+
+// ==========================================
 // SMARTMEET - MEETING.JS
 // Railway + GitHub Pages + Mobile Support
 // ==========================================

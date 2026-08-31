@@ -2585,3 +2585,258 @@ body:has(#meetingDetails) .login-container {
         font-size: 16px;
     }
 }
+
+/* =========================================================
+   SMARTMEET - MOBILE LANDSCAPE FIX
+========================================================= */
+
+@media screen and (max-width: 800px) and (orientation: landscape) {
+
+    html,
+    body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden !important;
+    }
+
+    .meeting-container {
+        width: 100vw;
+        height: 100dvh;
+        min-height: 0;
+        overflow: hidden !important;
+        display: block;
+    }
+
+    .video-section {
+        width: 100vw;
+        height: 100dvh;
+        min-height: 0;
+        overflow: hidden !important;
+        position: relative;
+    }
+
+    .side-panel {
+        display: none !important;
+    }
+
+    #meetingTitle {
+        top: 8px;
+        left: 12px;
+        font-size: 15px;
+    }
+
+    .meeting-info {
+        top: 7px;
+        right: 12px;
+        left: auto;
+        padding: 5px 8px;
+        gap: 6px;
+        font-size: 9px;
+    }
+
+    #localVideo {
+        top: 42px;
+        left: 10px;
+        width: calc(100% - 20px);
+        height: calc(100dvh - 125px);
+        min-height: 0;
+        border-radius: 10px;
+        object-fit: cover;
+    }
+
+    #remoteVideo {
+        width: 120px;
+        height: 75px;
+        right: 15px;
+        bottom: 75px;
+        border-radius: 8px;
+    }
+
+    #userVideoArea {
+        left: 10px;
+        right: 10px;
+        bottom: 70px;
+        height: 75px;
+    }
+
+    #userVideoContainer {
+        height: 100%;
+        grid-template-columns: repeat(3, minmax(80px, 1fr));
+        gap: 6px;
+        overflow: hidden;
+    }
+
+    .user-video-card {
+        min-height: 65px;
+        height: 75px;
+        border-radius: 8px;
+    }
+
+    .user-name {
+        left: 5px;
+        bottom: 5px;
+        padding: 3px 5px;
+        font-size: 8px;
+    }
+
+    #slideControls {
+        bottom: -22px;
+    }
+
+    #slideControls button {
+        padding: 4px 7px;
+        font-size: 9px;
+    }
+
+    #slideNumber {
+        padding: 4px 6px;
+        font-size: 9px;
+    }
+
+    .control-bar {
+        position: fixed;
+        left: 50%;
+        bottom: 5px;
+        width: calc(100vw - 20px);
+        max-width: none;
+        height: 55px;
+
+        padding: 5px;
+        gap: 5px;
+
+        transform: translateX(-50%);
+
+        overflow-x: auto !important;
+        overflow-y: hidden;
+
+        justify-content: flex-start;
+
+        border-radius: 10px;
+
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .control-bar button {
+        flex: 0 0 auto;
+        min-width: 75px;
+        height: 42px;
+        padding: 0 7px;
+        font-size: 9px;
+    }
+
+    #leaveBtn {
+        min-width: 85px;
+    }
+}
+
+/* =========================================================
+   SMARTMEET - MOBILE MEETING LANDSCAPE FIX
+   Only Meeting Page
+========================================================= */
+
+@media (max-width: 800px) and (orientation: landscape) {
+
+    html,
+    body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden !important;
+    }
+
+    .meeting-container {
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden !important;
+    }
+
+    .video-section {
+        width: 100vw;
+        height: 100vh;
+        overflow: hidden !important;
+    }
+
+    #localVideo {
+        top: 55px;
+        left: 10px;
+        width: calc(100% - 20px);
+        height: calc(100% - 145px);
+        min-height: 0;
+        object-fit: cover;
+    }
+
+    #meetingTitle {
+        top: 10px;
+        left: 12px;
+        font-size: 16px;
+    }
+
+    .meeting-info {
+        top: 8px;
+        right: 10px;
+        left: auto;
+        padding: 5px 9px;
+        font-size: 9px;
+        gap: 7px;
+    }
+
+    #userVideoArea {
+        left: 10px;
+        right: 10px;
+        bottom: 58px;
+        height: 75px;
+    }
+
+    #userVideoContainer {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 5px;
+    }
+
+    .user-video-card {
+        min-height: 70px;
+        border-radius: 7px;
+    }
+
+    .user-name {
+        left: 5px;
+        bottom: 5px;
+        padding: 3px 5px;
+        font-size: 8px;
+    }
+
+    #remoteVideo {
+        width: 100px;
+        height: 65px;
+        right: 10px;
+        bottom: 65px;
+    }
+
+    .control-bar {
+        left: 50%;
+        bottom: 5px;
+        width: auto;
+        max-width: calc(100vw - 20px);
+        padding: 4px 6px;
+        gap: 4px;
+        border-radius: 9px;
+        overflow-x: auto;
+    }
+
+    .control-bar button {
+        min-width: 65px;
+        height: 34px;
+        padding: 0 6px;
+        font-size: 9px;
+    }
+
+    #leaveBtn {
+        min-width: 75px;
+    }
+
+    #slideControls {
+        bottom: -15px;
+    }
+
+    .side-panel {
+        display: none !important;
+    }
+}
