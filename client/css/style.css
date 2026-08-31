@@ -2840,3 +2840,205 @@ body:has(#meetingDetails) .login-container {
         display: none !important;
     }
 }
+
+/* =========================================================
+   SMARTMEET - FINAL MOBILE LANDSCAPE FIX
+   ========================================================= */
+
+@media screen and (max-width: 800px) and (orientation: landscape) {
+
+    html,
+    body {
+        width: 100%;
+        height: 100%;
+        overflow: hidden !important;
+    }
+
+    .meeting-container {
+        display: block !important;
+        width: 100vw !important;
+        height: 100dvh !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+    }
+
+    .video-section {
+        position: relative !important;
+        width: 100vw !important;
+        height: 100dvh !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+        padding: 0 !important;
+    }
+
+    .side-panel {
+        display: none !important;
+    }
+
+    /* ---------- HEADER ---------- */
+
+    #meetingTitle {
+        position: absolute !important;
+        top: 8px !important;
+        left: 12px !important;
+        font-size: 15px !important;
+        z-index: 1000 !important;
+    }
+
+    .meeting-info {
+        position: absolute !important;
+        top: 7px !important;
+        right: 10px !important;
+        left: auto !important;
+        padding: 5px 8px !important;
+        gap: 6px !important;
+        font-size: 9px !important;
+        z-index: 1000 !important;
+    }
+
+    /* ---------- MAIN VIDEO ---------- */
+
+    #localVideo {
+        position: absolute !important;
+
+        top: 40px !important;
+        left: 8px !important;
+
+        width: calc(100% - 16px) !important;
+        height: calc(100dvh - 100px) !important;
+
+        min-height: 0 !important;
+
+        object-fit: cover !important;
+
+        border-radius: 10px !important;
+
+        z-index: 5 !important;
+    }
+
+    /* ---------- PARTICIPANTS ---------- */
+
+    #userVideoArea {
+        position: absolute !important;
+
+        left: 8px !important;
+        right: 8px !important;
+
+        bottom: 55px !important;
+
+        height: 65px !important;
+
+        z-index: 100 !important;
+    }
+
+    #userVideoContainer {
+        width: 100% !important;
+        height: 65px !important;
+
+        display: grid !important;
+
+        grid-template-columns:
+            repeat(4, minmax(60px, 1fr)) !important;
+
+        gap: 5px !important;
+
+        overflow: hidden !important;
+    }
+
+    .user-video-card {
+        width: 100% !important;
+        height: 65px !important;
+        min-height: 0 !important;
+
+        border-radius: 7px !important;
+    }
+
+    .user-name {
+        left: 4px !important;
+        bottom: 4px !important;
+
+        padding: 3px 5px !important;
+
+        font-size: 8px !important;
+    }
+
+    /* ---------- REMOTE VIDEO ---------- */
+
+    #remoteVideo {
+        width: 100px !important;
+        height: 65px !important;
+
+        right: 10px !important;
+        bottom: 65px !important;
+
+        z-index: 200 !important;
+
+        border-radius: 8px !important;
+    }
+
+    /* ---------- SLIDES ---------- */
+
+    #slideControls {
+        bottom: -18px !important;
+        gap: 4px !important;
+    }
+
+    #slideControls button {
+        padding: 4px 7px !important;
+        font-size: 9px !important;
+    }
+
+    #slideNumber {
+        padding: 4px 6px !important;
+        font-size: 9px !important;
+    }
+
+    /* ---------- CONTROL BAR ---------- */
+
+    .control-bar {
+        position: fixed !important;
+
+        left: 50% !important;
+        bottom: 4px !important;
+
+        width: calc(100vw - 16px) !important;
+        max-width: none !important;
+
+        height: 48px !important;
+
+        padding: 4px !important;
+        gap: 4px !important;
+
+        transform: translateX(-50%) !important;
+
+        display: flex !important;
+
+        justify-content: flex-start !important;
+
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+
+        z-index: 1000 !important;
+
+        border-radius: 9px !important;
+
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .control-bar button {
+        flex: 0 0 auto !important;
+
+        min-width: 68px !important;
+        height: 38px !important;
+
+        padding: 0 6px !important;
+
+        font-size: 9px !important;
+
+        border-radius: 7px !important;
+    }
+
+    #leaveBtn {
+        min-width: 78px !important;
+    }
+}

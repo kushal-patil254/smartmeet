@@ -12,6 +12,60 @@
     <title>SmartMeet - Meeting</title>
 
     <link rel="stylesheet" href="css/style.css">
+
+    <style>
+    /* ==========================================
+       SMARTMEET - MEETING PAGE MOBILE LANDSCAPE
+       ========================================== */
+
+    @media screen and (max-width: 800px) and (orientation: landscape) {
+
+        html,
+        body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+        }
+
+        .meeting-container {
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            flex-direction: row;
+        }
+
+        .video-section {
+            flex: 1;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .side-panel {
+            width: 280px;
+            height: 100vh;
+            overflow-y: auto;
+        }
+
+        .control-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        .control-bar button {
+            font-size: 12px;
+            padding: 7px 9px;
+        }
+
+        #localVideo,
+        #remoteVideo {
+            max-width: 100%;
+            max-height: 55vh;
+        }
+    }
+</style>
 </head>
 
 <body>
