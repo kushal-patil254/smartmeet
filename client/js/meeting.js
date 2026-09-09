@@ -483,6 +483,7 @@ function showRemoteVideo(
     }
 
 
+
     // ======================================
     // VIDEO CONTAINER
     // ======================================
@@ -684,26 +685,185 @@ function removeRemoteUser(
 // ==========================================
 
 async function startCamera() {
-
-    // Already started
     if (localStream) {
-
         return true;
-
     }
-
 
     if (
         !navigator.mediaDevices ||
         !navigator.mediaDevices.getUserMedia
     ) {
+        alert("Camera/Microphone is not supported.");
+        return false;
+    }
+
+    let videoStream = null;
+    let audioStream = null;
+
+    try {
+        console.log("Starting camera...");
+
+        // Start CAMERA separately
+        videoStream =
+            await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: "user"
+                },
+                audio: false
+            });
+
+        console.log("Camera started.");
+
+        // Start MICROPHONE separately
+        try {
+            console.log("Starting microphone...");
+
+            audioStream =
+                await navigator.mediaDevices.getUserMedia({
+                    video: false,
+                    audio: true
+                });
+
+            console.log("Microphone started.");
+        }
+        catch (audioError) {
+            console.error(
+                "Microphone error:",
+                audioError
+            );
+
+            // Stop camera if microphone fails
+            videoStream
+                .getTracks()
+                .forEach(track => track.stop());
+
+            alert(
+                "Microphone could not start: " +
+                audioError.message
+            );
+
+            return false;
+        }
+
+        // Combine camera + microphone
+        localStream =
+            new MediaStream([
+                ...videoStream.getVideoTracks(),
+                ...audioStream.getAudioTracks()
+            ]);
+
+        // Show local camera
+        if (localVideo) {
+            localVideo.srcObject =
+                localStream;
+
+            localVideo.autoplay =
+                true;
+
+            localVideo.playsInline =
+                true;
+
+            localVideo.muted =
+                true;
+
+            try {
+                await localVideo.play();
+            }
+            catch (error) {
+                console.log(
+                    "Local video play:",
+                    error
+                );
+            }
+        }
+
+        cameraOn =
+            localStream
+                .getVideoTracks()
+                .some(
+                    track =>
+                        track.readyState === "live"
+                );
+
+        micOn =
+            localStream
+                .getAudioTracks()
+                .some(
+                    track =>
+                        track.readyState === "live"
+                );
+
+        updateMediaButtons();
+
+        // Add/replace media in existing peer connections
+        Object.values(
+            peerConnections
+        ).forEach(peer => {
+
+            localStream
+                .getTracks()
+                .forEach(track => {
+
+                    const sender =
+                        peer
+                            .getSenders()
+                            .find(
+                                item =>
+                                    item.track &&
+                                    item.track.kind ===
+                                        track.kind
+                            );
+
+                    if (sender) {
+                        sender.replaceTrack(
+                            track
+                        );
+                    }
+                    else {
+                        peer.addTrack(
+                            track,
+                            localStream
+                        );
+                    }
+                });
+        });
+
+        console.log(
+            "Camera + Microphone ready."
+        );
+
+        return true;
+    }
+    catch (error) {
+        console.error(
+            "Camera error:",
+            error
+        );
+
+        if (videoStream) {
+            videoStream
+                .getTracks()
+                .forEach(track => track.stop());
+        }
+
+        if (audioStream) {
+            audioStream
+                .getTracks()
+                .forEach(track => track.stop());
+        }
+
+        localStream = null;
+        cameraOn = false;
+        micOn = false;
+
+        updateMediaButtons();
 
         alert(
-            "Camera/Microphone is not supported by this browser."
+            "Unable to start camera: " +
+            error.message
         );
 
         return false;
-
     }
 
 
