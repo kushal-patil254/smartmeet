@@ -1,3 +1,4 @@
+alert("MEETING JS LOADED");
 // ==========================================
 // SMARTMEET - MEETING.JS
 // Railway + GitHub Pages + Mobile Support
@@ -9,6 +10,10 @@ const API_URL =
 const SOCKET_URL =
     "https://smartmeet-production.up.railway.app";
 
+if (typeof io === "undefined") {
+    alert("SmartMeet Error: Socket.IO did not load.");
+    throw new Error("Socket.IO is not loaded in WebView");
+}
 
 // ==========================================
 // SOCKET.IO
@@ -947,8 +952,6 @@ function updateMediaButtons() {
     }
 
 }
-
-
 // ==========================================
 // CAMERA BUTTON
 // ==========================================
@@ -1608,12 +1611,9 @@ socket.on(
 
     }
 );
-
-
 // ==========================================
 // CHAT SEND
 // ==========================================
-
 function sendMessage() {
 
     if (!chatBox) {
@@ -2065,8 +2065,6 @@ if (screenBtn) {
     );
 
 }
-
-
 // ==========================================
 // STOP SCREEN SHARE
 // ==========================================
