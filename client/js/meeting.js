@@ -77,7 +77,6 @@ const meetingDuration =
         10
     ) || 60;
 
-
 // ==========================================
 // USER
 // ==========================================
@@ -144,7 +143,6 @@ const userVideoContainer =
         "userVideoContainer"
     );
 
-
 // ==========================================
 // CHECK MEETING
 // ==========================================
@@ -156,7 +154,6 @@ if (!meetingId) {
     window.location.href =
         "dashboard.html";
 }
-
 
 // ==========================================
 // SHOW MEETING INFO
@@ -176,7 +173,6 @@ if (meetingIdElement) {
 
 }
 
-
 // ==========================================
 // LOCAL MEDIA
 // ==========================================
@@ -191,7 +187,6 @@ let screenStream = null;
 
 let screenSharing = false;
 
-
 // ==========================================
 // WEBRTC
 // ==========================================
@@ -201,7 +196,6 @@ const peerConnections = {};
 const pendingIceCandidates = {};
 
 const remoteUserNames = {};
-
 
 // ==========================================
 // STUN SERVER
@@ -224,7 +218,6 @@ const rtcConfig = {
     ]
 
 };
-
 
 // ==========================================
 // CREATE PEER CONNECTION
@@ -276,8 +269,6 @@ function createPeerConnection(
         pendingIceCandidates[
             targetSocketId
         ] || [];
-
-
     // ======================================
     // ADD LOCAL TRACKS
     // ======================================
@@ -298,8 +289,6 @@ function createPeerConnection(
             );
 
     }
-
-
     // ======================================
     // REMOTE TRACK
     // ======================================
@@ -337,8 +326,6 @@ function createPeerConnection(
             );
 
         };
-
-
     // ======================================
     // ICE CANDIDATE
     // ======================================
@@ -366,8 +353,6 @@ function createPeerConnection(
             }
 
         };
-
-
     // ======================================
     // CONNECTION STATE
     // ======================================
@@ -413,8 +398,6 @@ function createPeerConnection(
     return peer;
 
 }
-
-
 // ==========================================
 // ADD PENDING ICE
 // ==========================================
@@ -479,8 +462,6 @@ async function addPendingIce(
     }
 
 }
-
-
 // ==========================================
 // SHOW REMOTE VIDEO
 // ==========================================
@@ -490,7 +471,6 @@ function showRemoteVideo(
     name,
     stream
 ) {
-
     // ======================================
     // MAIN REMOTE VIDEO
     // ======================================
@@ -510,9 +490,6 @@ function showRemoteVideo(
             false;
 
     }
-
-
-
     // ======================================
     // VIDEO CONTAINER
     // ======================================
@@ -596,8 +573,6 @@ function showRemoteVideo(
         );
 
     }
-
-
     const video =
         card.querySelector(
             "video"
@@ -645,8 +620,6 @@ function showRemoteVideo(
     }
 
 }
-
-
 // ==========================================
 // REMOVE REMOTE USER
 // ==========================================
@@ -707,13 +680,12 @@ function removeRemoteUser(
     }
 
 }
-
-
 // ==========================================
 // START CAMERA + MIC
 // ==========================================
 
 async function startCamera() {
+
     if (localStream) {
         return true;
     }
@@ -730,9 +702,8 @@ async function startCamera() {
     let audioStream = null;
 
     try {
-        console.log("Starting camera...");
 
-        // Start CAMERA separately
+        // CAMERA
         videoStream =
             await navigator.mediaDevices.getUserMedia({
                 video: {
@@ -741,11 +712,8 @@ async function startCamera() {
                 audio: false
             });
 
-        console.log("Camera started.");
-
-        // Start MICROPHONE separately
+        // MICROPHONE
         try {
-            console.log("Starting microphone...");
 
             audioStream =
                 await navigator.mediaDevices.getUserMedia({
@@ -753,15 +721,13 @@ async function startCamera() {
                     audio: true
                 });
 
-            console.log("Microphone started.");
-        }
-        catch (audioError) {
+        } catch (audioError) {
+
             console.error(
                 "Microphone error:",
                 audioError
             );
 
-            // Stop camera if microphone fails
             videoStream
                 .getTracks()
                 .forEach(track => track.stop());
@@ -774,15 +740,16 @@ async function startCamera() {
             return false;
         }
 
-        // Combine camera + microphone
+        // COMBINE CAMERA + MIC
         localStream =
             new MediaStream([
                 ...videoStream.getVideoTracks(),
                 ...audioStream.getAudioTracks()
             ]);
 
-        // Show local camera
+        // SHOW LOCAL VIDEO
         if (localVideo) {
+
             localVideo.srcObject =
                 localStream;
 
@@ -797,8 +764,7 @@ async function startCamera() {
 
             try {
                 await localVideo.play();
-            }
-            catch (error) {
+            } catch (error) {
                 console.log(
                     "Local video play:",
                     error
@@ -824,7 +790,7 @@ async function startCamera() {
 
         updateMediaButtons();
 
-        // Add/replace media in existing peer connections
+        // ADD MEDIA TO EXISTING PEERS
         Object.values(
             peerConnections
         ).forEach(peer => {
@@ -844,17 +810,20 @@ async function startCamera() {
                             );
 
                     if (sender) {
-                        sender.replaceTrack(
-                            track
-                        );
-                    }
-                    else {
+
+                        sender.replaceTrack(track);
+
+                    } else {
+
                         peer.addTrack(
                             track,
                             localStream
                         );
+
                     }
+
                 });
+
         });
 
         console.log(
@@ -862,23 +831,28 @@ async function startCamera() {
         );
 
         return true;
-    }
-    catch (error) {
+
+    } catch (error) {
+
         console.error(
-            "Camera error:",
+            "Camera/Microphone Error:",
             error
         );
 
         if (videoStream) {
+
             videoStream
                 .getTracks()
                 .forEach(track => track.stop());
+
         }
 
         if (audioStream) {
+
             audioStream
                 .getTracks()
                 .forEach(track => track.stop());
+
         }
 
         localStream = null;
@@ -888,216 +862,12 @@ async function startCamera() {
         updateMediaButtons();
 
         alert(
-            "Unable to start camera: " +
+            "Unable to start camera/microphone: " +
             error.message
         );
 
         return false;
     }
-
-
-    try {
-
-        console.log(
-            "Requesting camera and microphone..."
-        );
-
-
-        localStream =
-            await navigator.mediaDevices
-                .getUserMedia({
-
-                    video: {
-                        facingMode: "user"
-                    },
-
-                    audio: true
-
-                });
-
-
-        console.log(
-            "Camera/Microphone permission granted."
-        );
-
-
-        if (localVideo) {
-
-            localVideo.srcObject =
-                localStream;
-
-            localVideo.autoplay =
-                true;
-
-            localVideo.playsInline =
-                true;
-
-            localVideo.muted =
-                true;
-
-
-            const playPromise =
-                localVideo.play();
-
-
-            if (
-                playPromise &&
-                typeof playPromise.catch ===
-                    "function"
-            ) {
-
-                playPromise.catch(
-                    error => {
-
-                        console.log(
-                            "Local video play:",
-                            error
-                        );
-
-                    }
-                );
-
-            }
-
-        }
-
-
-        cameraOn =
-            localStream
-                .getVideoTracks()
-                .some(
-                    track =>
-                        track.readyState ===
-                        "live"
-                );
-
-
-        micOn =
-            localStream
-                .getAudioTracks()
-                .some(
-                    track =>
-                        track.readyState ===
-                        "live"
-                );
- updateMediaButtons();
-         // ==================================
-        // ADD TRACKS TO EXISTING PEERS
-        // ==================================
-
-        Object.values(
-            peerConnections
-        ).forEach(
-            peer => {
-
-                localStream
-                    .getTracks()
-                    .forEach(
-                        track => {
-
-                            const senders =
-                                peer.getSenders();
-
-
-                            const sender =
-                                senders.find(
-                                    item =>
-                                        item.track &&
-                                        item.track.kind ===
-                                            track.kind
-                                );
-
-
-                            if (sender) {
-
-                                sender.replaceTrack(
-                                    track
-                                );
-
-                            }
-
-                            else {
-
-                                peer.addTrack(
-                                    track,
-                                    localStream
-                                );
-
-                            }
-
-                        }
-                    );
-
-            }
-        );
-
-
-        console.log(
-            "Local media ready."
-        );
-
-
-        return true;
-
-    }
-
-    catch (error) {
-
-        console.error(
-            "Camera/Microphone Error:",
-            error
-        );
-
-
-        localStream =
-            null;
-
-        cameraOn =
-            false;
-
-        micOn =
-            false;
-
-
-        updateMediaButtons();
-
-
-        if (
-            error.name ===
-            "NotAllowedError"
-        ) {
-
-            alert(
-                "Camera/Microphone permission denied. Please allow Camera and Microphone in browser settings and try again."
-            );
-
-        }
-
-        else if (
-            error.name ===
-            "NotFoundError"
-        ) {
-
-            alert(
-                "Camera or Microphone not found on this device."
-            );
-
-        }
-
-        else {
-
-            alert(
-                "Unable to start Camera/Microphone: " +
-                error.message
-            );
-
-        }
-
-
-        return false;
-
-    }
-
 }
 
 
@@ -1193,8 +963,6 @@ if (cameraBtn) {
     );
 
 }
-
-
 // ==========================================
 // MIC BUTTON
 // ==========================================
@@ -1251,8 +1019,6 @@ if (micBtn) {
     );
 
 }
-
-
 // ==========================================
 // SOCKET CONNECT
 // ==========================================
@@ -2108,7 +1874,7 @@ if (screenBtn) {
     screenBtn.addEventListener(
         "click",
         async function () {
-
+               alert("SCREEN BUTTON CLICKED");
             
         // Android WebView → Chrome
         if (
