@@ -869,8 +869,6 @@ async function startCamera() {
         return false;
     }
 }
-
-
 // ==========================================
 // MEDIA BUTTON UI
 // ==========================================
@@ -1875,6 +1873,7 @@ if (screenBtn) {
         "click",
         async function () {
                alert("SCREEN BUTTON CLICKED");
+               alert("AndroidBridge = " + typeof AndroidBridge);
             
         // Android WebView → Chrome
         if (
