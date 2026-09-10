@@ -26,12 +26,41 @@ const socket = io(SOCKET_URL, {
     timeout: 20000
 });
 
-
 // ==========================================
 // MEETING DATA
 // ==========================================
 
+// Chrome screen-share handoff data
+const urlParams = new URLSearchParams(window.location.search);
+
+const handoffMeetingId =
+    urlParams.get("meetingId");
+
+const handoffUser =
+    urlParams.get("user");
+
+// If opened from Android → Chrome
+if (
+    urlParams.get("screenShare") === "1" &&
+    handoffMeetingId
+) {
+    localStorage.setItem(
+        "hostMeetingId",
+        handoffMeetingId
+    );
+
+    if (handoffUser) {
+        localStorage.setItem(
+            "joinedUser",
+            JSON.stringify({
+                name: handoffUser
+            })
+        );
+    }
+}
+
 const meetingId =
+    handoffMeetingId ||
     localStorage.getItem("hostMeetingId");
 
 const meetingName =
@@ -951,12 +980,8 @@ async function startCamera() {
                         track.readyState ===
                         "live"
                 );
-
-
-        updateMediaButtons();
-
-
-        // ==================================
+ updateMediaButtons();
+         // ==================================
         // ADD TRACKS TO EXISTING PEERS
         // ==================================
 
@@ -2076,11 +2101,38 @@ timerInterval =
 // SCREEN SHARE
 // ==========================================
 
+
+
 if (screenBtn) {
 
     screenBtn.addEventListener(
         "click",
         async function () {
+
+            
+        // Android WebView → Chrome
+        if (
+            /Android/i.test(navigator.userAgent) &&
+            typeof AndroidBridge !== "undefined"
+        ) {
+            const meetingId = localStorage.getItem("hostMeetingId");
+
+            const userData = JSON.parse(
+                localStorage.getItem("joinedUser") || "{}"
+            );
+
+            const userName = userData.name || "Guest";
+
+            const chromeUrl =
+                "https://kushal-patil254.github.io/smartmeet/client/meeting.html" +
+                "?screenShare=1" +
+                "&meetingId=" + encodeURIComponent(meetingId || "") +
+                "&user=" + encodeURIComponent(userName);
+
+            AndroidBridge.openChrome(chromeUrl);
+            return;
+        }
+
 
             // Stop screen sharing
             if (screenSharing) {
@@ -2262,8 +2314,6 @@ async function stopScreenShare() {
             null;
 
     }
-
-
     // ======================================
     // RESTORE CAMERA
     // ======================================
@@ -2335,7 +2385,6 @@ async function stopScreenShare() {
 
 
     updateMediaButtons();
-
 }
 // ==========================================
 // LEAVE BUTTON
@@ -2370,12 +2419,9 @@ if (leaveBtn) {
     );
 
 }
-
-
 // ==========================================
 // STOP ALL MEDIA
 // ==========================================
-
 function stopAllMedia() {
 
     if (screenStream) {
@@ -2435,8 +2481,6 @@ function stopAllMedia() {
     updateMediaButtons();
 
 }
-
-
 // ==========================================
 // LEAVE MEETING
 // ==========================================
@@ -2470,8 +2514,6 @@ function leaveMeeting() {
 
         }
     );
-
-
     // ======================================
     // TELL SOCKET SERVER
     // ======================================
@@ -2485,8 +2527,6 @@ function leaveMeeting() {
         );
 
     }
-
-
     // ======================================
     // HOST END DATABASE MEETING
     // ======================================
@@ -2532,17 +2572,11 @@ function leaveMeeting() {
         );
 
     }
-
-
     finishLeaving();
-
 }
-
-
 // ==========================================
 // TIMER END
 // ==========================================
-
 function endMeeting() {
 
     if (isHost) {
@@ -2591,8 +2625,6 @@ function endMeeting() {
     }
 
 }
-
-
 // ==========================================
 // FINISH LEAVING
 // ==========================================
@@ -2647,9 +2679,6 @@ window.addEventListener(
 
     }
 );
-
-
 console.log(
     "SmartMeet meeting.js loaded successfully."
 );
-

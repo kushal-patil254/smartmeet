@@ -38,8 +38,6 @@ body {
 
     color: #ffffff;
 }
-
-
 /* =========================================================
    JOIN CONTAINER
    ========================================================= */
@@ -64,8 +62,6 @@ body {
 
     animation: joinAppear 0.4s ease;
 }
-
-
 /* =========================================================
    TITLE
    ========================================================= */
@@ -87,8 +83,6 @@ body {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
-
-
 /* =========================================================
    INPUTS
    ========================================================= */
@@ -120,15 +114,11 @@ body {
     pointer-events: auto;
     user-select: text;
 }
-
-
 /* Placeholder */
 
 .join-container input::placeholder {
     color: #7d8ca5;
 }
-
-
 /* Focus */
 
 .join-container input:focus {
@@ -139,8 +129,6 @@ body {
     box-shadow:
         0 0 0 3px rgba(37, 99, 235, 0.15);
 }
-
-
 /* =========================================================
    JOIN BUTTON
    ========================================================= */
@@ -406,12 +394,9 @@ async function joinMeeting() {
             "Server data:",
             data
         );
-
-
         // ==============================
         // INVALID MEETING
         // ==============================
-
         if (data.success !== true) {
 
             alert(
@@ -421,8 +406,6 @@ async function joinMeeting() {
 
             return;
         }
-
-
         // ==============================
         // SAVE USER DATA
         // ==============================
@@ -441,9 +424,7 @@ async function joinMeeting() {
             "hostMeetingPassword",
             meetingPassword
         );
-
-
-        // Save meeting name if server provides it
+// Save meeting name if server provides it
         if (
             data.meeting &&
             data.meeting.meeting_name
@@ -455,8 +436,6 @@ async function joinMeeting() {
             );
 
         }
-
-
         // ==============================
         // JOIN SUCCESS
         // ==============================
@@ -468,11 +447,8 @@ async function joinMeeting() {
 
         window.location.href =
             "meeting.html";
-
     }
-
-
-    catch (error) {
+catch (error) {
 
         console.error(
             "JOIN ERROR:",
@@ -485,11 +461,7 @@ async function joinMeeting() {
         );
 
     }
-
 }
-
 </script>
-
 </body>
-
 </html>
