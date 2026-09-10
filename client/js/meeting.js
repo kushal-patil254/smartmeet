@@ -1918,6 +1918,11 @@ console.log(
     chromeUrl
 );
 
+alert("BEFORE CHROME");
+
+AndroidBridge.openChrome(chromeUrl);
+
+alert("AFTER CHROME");
 try {
 
     AndroidBridge.openChrome(
