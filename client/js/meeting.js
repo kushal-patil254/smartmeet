@@ -1880,22 +1880,64 @@ if (screenBtn) {
             /Android/i.test(navigator.userAgent) &&
             typeof AndroidBridge !== "undefined"
         ) {
-            const meetingId = localStorage.getItem("hostMeetingId");
+         const shareMeetingId =
+    meetingId ||
+    localStorage.getItem("hostMeetingId") ||
+    "";
 
-            const userData = JSON.parse(
-                localStorage.getItem("joinedUser") || "{}"
-            );
+let shareUserName =
+    localStorage.getItem("joinedUser") ||
+    "Guest";
 
-            const userName = userData.name || "Guest";
+// Handle both JSON and plain-text username
+try {
+    const userData =
+        JSON.parse(shareUserName);
 
-            const chromeUrl =
-                "https://kushal-patil254.github.io/smartmeet/client/meeting.html" +
-                "?screenShare=1" +
-                "&meetingId=" + encodeURIComponent(meetingId || "") +
-                "&user=" + encodeURIComponent(userName);
+    if (
+        userData &&
+        userData.name
+    ) {
+        shareUserName =
+            userData.name;
+    }
+} catch (error) {
+    // Plain text username - keep it as it is
+}
 
-            AndroidBridge.openChrome(chromeUrl);
-            return;
+const chromeUrl =
+    "https://kushal-patil254.github.io/smartmeet/client/meeting.html" +
+    "?screenShare=1" +
+    "&meetingId=" +
+    encodeURIComponent(shareMeetingId) +
+    "&user=" +
+    encodeURIComponent(shareUserName);
+
+console.log(
+    "Opening Chrome:",
+    chromeUrl
+);
+
+try {
+
+    AndroidBridge.openChrome(
+        chromeUrl
+    );
+
+} catch (error) {
+
+    console.error(
+        "AndroidBridge error:",
+        error
+    );
+
+    alert(
+        "Chrome could not be opened: " +
+        error.message
+    );
+}
+
+return;
         }
 
 
