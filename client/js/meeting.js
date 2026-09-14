@@ -1873,82 +1873,34 @@ if (screenBtn) {
 
             alert("SCREEN BUTTON CLICKED");
 
-            // ==================================
-            // ANDROID APP → OPEN CHROME
-            // ==================================
+    // ==========================================
+// ANDROID APP → NATIVE SCREEN SHARE
+// ==========================================
 
-            if (
-                /Android/i.test(navigator.userAgent) &&
-                typeof AndroidBridge !== "undefined"
-            ) {
+if (
+    /Android/i.test(navigator.userAgent) &&
+    typeof AndroidBridge !== "undefined"
+) {
 
-                const shareMeetingId =
-                    meetingId ||
-                    localStorage.getItem("hostMeetingId") ||
-                    "";
+    try {
 
-                let shareUserName =
-                    localStorage.getItem("joinedUser") ||
-                    "Guest";
+        AndroidBridge.startScreenShare();
 
-                // JSON किंवा plain text दोन्ही handle करा
-                try {
+    } catch (error) {
 
-                    const userData =
-                        JSON.parse(shareUserName);
+        console.error(
+            "Native screen share error:",
+            error
+        );
 
-                    if (
-                        userData &&
-                        userData.name
-                    ) {
-                        shareUserName =
-                            userData.name;
-                    }
+        alert(
+            "Screen Share error: " +
+            error.message
+        );
+    }
 
-                } catch (error) {
-                    // Plain text username
-                }
-
-                const chromeUrl =
-                    "https://kushal-patil254.github.io/smartmeet/client/meeting.html" +
-                    "?screenShare=1" +
-                    "&meetingId=" +
-                    encodeURIComponent(shareMeetingId) +
-                    "&user=" +
-                    encodeURIComponent(shareUserName);
-
-                console.log(
-                    "Opening Chrome:",
-                    chromeUrl
-                );
-
-                alert("BEFORE CHROME");
-
-                try {
-
-                    AndroidBridge.openChrome(
-                        chromeUrl
-                    );
-
-                    alert("AFTER CHROME");
-
-                } catch (error) {
-
-                    console.error(
-                        "AndroidBridge error:",
-                        error
-                    );
-
-                    alert(
-                        "Chrome could not be opened: " +
-                        error.message
-                    );
-
-                }
-
-                return;
-            }
-
+    return;
+}
 
             // ==================================
             // STOP SCREEN SHARING
