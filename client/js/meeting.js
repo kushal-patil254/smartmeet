@@ -1865,88 +1865,95 @@ timerInterval =
 // SCREEN SHARE
 // ==========================================
 
-
-
 if (screenBtn) {
 
     screenBtn.addEventListener(
         "click",
         async function () {
-               alert("SCREEN BUTTON CLICKED");
-               alert("AndroidBridge = " + typeof AndroidBridge);
-            
-        // Android WebView → Chrome
-        if (
-            /Android/i.test(navigator.userAgent) &&
-            typeof AndroidBridge !== "undefined"
-        ) {
-         const shareMeetingId =
-    meetingId ||
-    localStorage.getItem("hostMeetingId") ||
-    "";
 
-let shareUserName =
-    localStorage.getItem("joinedUser") ||
-    "Guest";
+            alert("SCREEN BUTTON CLICKED");
 
-// Handle both JSON and plain-text username
-try {
-    const userData =
-        JSON.parse(shareUserName);
+            // ==================================
+            // ANDROID APP → OPEN CHROME
+            // ==================================
 
-    if (
-        userData &&
-        userData.name
-    ) {
-        shareUserName =
-            userData.name;
-    }
-} catch (error) {
-    // Plain text username - keep it as it is
-}
+            if (
+                /Android/i.test(navigator.userAgent) &&
+                typeof AndroidBridge !== "undefined"
+            ) {
 
-const chromeUrl =
-    "https://kushal-patil254.github.io/smartmeet/client/meeting.html" +
-    "?screenShare=1" +
-    "&meetingId=" +
-    encodeURIComponent(shareMeetingId) +
-    "&user=" +
-    encodeURIComponent(shareUserName);
+                const shareMeetingId =
+                    meetingId ||
+                    localStorage.getItem("hostMeetingId") ||
+                    "";
 
-console.log(
-    "Opening Chrome:",
-    chromeUrl
-);
+                let shareUserName =
+                    localStorage.getItem("joinedUser") ||
+                    "Guest";
 
-alert("BEFORE CHROME");
+                // JSON किंवा plain text दोन्ही handle करा
+                try {
 
-AndroidBridge.openChrome(chromeUrl);
+                    const userData =
+                        JSON.parse(shareUserName);
 
-alert("AFTER CHROME");
-try {
+                    if (
+                        userData &&
+                        userData.name
+                    ) {
+                        shareUserName =
+                            userData.name;
+                    }
 
-    AndroidBridge.openChrome(
-        chromeUrl
-    );
+                } catch (error) {
+                    // Plain text username
+                }
 
-} catch (error) {
+                const chromeUrl =
+                    "https://kushal-patil254.github.io/smartmeet/client/meeting.html" +
+                    "?screenShare=1" +
+                    "&meetingId=" +
+                    encodeURIComponent(shareMeetingId) +
+                    "&user=" +
+                    encodeURIComponent(shareUserName);
 
-    console.error(
-        "AndroidBridge error:",
-        error
-    );
+                console.log(
+                    "Opening Chrome:",
+                    chromeUrl
+                );
 
-    alert(
-        "Chrome could not be opened: " +
-        error.message
-    );
-}
+                alert("BEFORE CHROME");
 
-return;
-        }
+                try {
+
+                    AndroidBridge.openChrome(
+                        chromeUrl
+                    );
+
+                    alert("AFTER CHROME");
+
+                } catch (error) {
+
+                    console.error(
+                        "AndroidBridge error:",
+                        error
+                    );
+
+                    alert(
+                        "Chrome could not be opened: " +
+                        error.message
+                    );
+
+                }
+
+                return;
+            }
 
 
-            // Stop screen sharing
+            // ==================================
+            // STOP SCREEN SHARING
+            // ==================================
+
             if (screenSharing) {
 
                 stopScreenShare();
@@ -1956,19 +1963,27 @@ return;
             }
 
 
+            // ==================================
+            // CHECK SCREEN SHARE SUPPORT
+            // ==================================
+
             if (
                 !navigator.mediaDevices ||
                 !navigator.mediaDevices.getDisplayMedia
             ) {
 
                 alert(
-                    "Screen sharing is not supported by this mobile browser. Please use a supported desktop browser."
+                    "This browser does not support screen sharing."
                 );
 
                 return;
 
             }
 
+
+            // ==================================
+            // START SCREEN SHARE
+            // ==================================
 
             try {
 
@@ -2059,6 +2074,10 @@ return;
                 );
 
 
+                // ==================================
+                // SCREEN SHARE STOPPED BY SYSTEM
+                // ==================================
+
                 screenTrack.onended =
                     function () {
 
@@ -2066,20 +2085,17 @@ return;
 
                     };
 
-
             }
 
             catch (error) {
 
-                console.log(
+                console.error(
                     "Screen share error:",
                     error
                 );
 
-
                 screenSharing =
                     false;
-
 
                 updateMediaButtons();
 
@@ -2089,43 +2105,6 @@ return;
     );
 
 }
-// ==========================================
-// STOP SCREEN SHARE
-// ==========================================
-
-async function stopScreenShare() {
-
-    if (!screenSharing) {
-
-        return;
-
-    }
-
-
-    screenSharing =
-        false;
-
-
-    if (screenStream) {
-
-        screenStream
-            .getTracks()
-            .forEach(
-                track => {
-
-                    try {
-                        track.stop();
-                    }
-
-                    catch (error) {}
-
-                }
-            );
-
-        screenStream =
-            null;
-
-    }
     // ======================================
     // RESTORE CAMERA
     // ======================================
@@ -2197,7 +2176,7 @@ async function stopScreenShare() {
 
 
     updateMediaButtons();
-}
+
 // ==========================================
 // LEAVE BUTTON
 // ==========================================
