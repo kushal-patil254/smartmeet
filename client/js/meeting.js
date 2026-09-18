@@ -1,7 +1,8 @@
 alert("MEETING JS LOADED");
+
 // ==========================================
 // SMARTMEET - MEETING.JS
-// Railway + GitHub Pages + Mobile Support
+// Railway + GitHub Pages + Android Native Screen Share
 // ==========================================
 
 const API_URL =
@@ -30,8 +31,8 @@ const socket = io(SOCKET_URL, {
 // MEETING DATA
 // ==========================================
 
-// Chrome screen-share handoff data
-const urlParams = new URLSearchParams(window.location.search);
+const urlParams =
+    new URLSearchParams(window.location.search);
 
 const handoffMeetingId =
     urlParams.get("meetingId");
@@ -39,17 +40,19 @@ const handoffMeetingId =
 const handoffUser =
     urlParams.get("user");
 
-// If opened from Android → Chrome
+// Chrome handoff
 if (
     urlParams.get("screenShare") === "1" &&
     handoffMeetingId
 ) {
+
     localStorage.setItem(
         "hostMeetingId",
         handoffMeetingId
     );
 
     if (handoffUser) {
+
         localStorage.setItem(
             "joinedUser",
             JSON.stringify({
@@ -90,7 +93,6 @@ if (!userName) {
 
 const isHost =
     userName === "Host";
-
 
 // ==========================================
 // HTML ELEMENTS
@@ -142,14 +144,15 @@ const userVideoContainer =
     document.getElementById(
         "userVideoContainer"
     );
-
 // ==========================================
 // CHECK MEETING
 // ==========================================
 
 if (!meetingId) {
 
-    alert("Meeting information not found.");
+    alert(
+        "Meeting information not found."
+    );
 
     window.location.href =
         "dashboard.html";
@@ -163,14 +166,12 @@ if (meetingTitle) {
 
     meetingTitle.innerText =
         meetingName;
-
 }
 
 if (meetingIdElement) {
 
     meetingIdElement.innerText =
         meetingId;
-
 }
 
 // ==========================================
@@ -186,6 +187,26 @@ let micOn = false;
 let screenStream = null;
 
 let screenSharing = false;
+
+// ==========================================
+// ANDROID NATIVE SCREEN SHARE
+// ==========================================
+
+let androidScreenCanvas = null;
+
+let androidScreenContext = null;
+
+let androidScreenStream = null;
+
+let androidScreenTrack = null;
+
+let androidScreenImage = null;
+
+let androidFrameBusy = false;
+
+let androidLastFrameTime = 0;
+
+const ANDROID_FRAME_INTERVAL = 100;
 
 // ==========================================
 // WEBRTC
@@ -235,33 +256,27 @@ function createPeerConnection(
         return peerConnections[
             targetSocketId
         ];
-
     }
-
 
     console.log(
         "Creating PeerConnection:",
         targetSocketId
     );
 
-
     remoteUserNames[
         targetSocketId
     ] =
         targetUserName || "Guest";
-
 
     const peer =
         new RTCPeerConnection(
             rtcConfig
         );
 
-
     peerConnections[
         targetSocketId
     ] =
         peer;
-
 
     pendingIceCandidates[
         targetSocketId
@@ -269,6 +284,7 @@ function createPeerConnection(
         pendingIceCandidates[
             targetSocketId
         ] || [];
+
     // ======================================
     // ADD LOCAL TRACKS
     // ======================================
@@ -287,8 +303,8 @@ function createPeerConnection(
 
                 }
             );
-
     }
+
     // ======================================
     // REMOTE TRACK
     // ======================================
@@ -302,20 +318,16 @@ function createPeerConnection(
                 event.track.kind
             );
 
-
             if (
                 !event.streams ||
                 !event.streams[0]
             ) {
 
                 return;
-
             }
-
 
             const stream =
                 event.streams[0];
-
 
             showRemoteVideo(
                 targetSocketId,
@@ -324,10 +336,9 @@ function createPeerConnection(
                 ],
                 stream
             );
-
         };
-    // ======================================
-    // ICE CANDIDATE
+        // ======================================
+    // ICE
     // ======================================
 
     peer.onicecandidate =
@@ -346,13 +357,11 @@ function createPeerConnection(
 
                         candidate:
                             event.candidate
-
                     }
                 );
-
             }
-
         };
+
     // ======================================
     // CONNECTION STATE
     // ======================================
@@ -366,7 +375,6 @@ function createPeerConnection(
                 peer.connectionState
             );
 
-
             if (
                 peer.connectionState ===
                 "failed"
@@ -375,9 +383,7 @@ function createPeerConnection(
                 console.log(
                     "Peer connection failed."
                 );
-
             }
-
 
             if (
                 peer.connectionState ===
@@ -389,15 +395,12 @@ function createPeerConnection(
                 removeRemoteUser(
                     targetSocketId
                 );
-
             }
-
         };
 
-
     return peer;
-
 }
+
 // ==========================================
 // ADD PENDING ICE
 // ==========================================
@@ -415,22 +418,18 @@ async function addPendingIce(
         return;
     }
 
-
     if (
         !peer.remoteDescription ||
         !peer.remoteDescription.type
     ) {
 
         return;
-
     }
-
 
     const candidates =
         pendingIceCandidates[
             socketId
         ] || [];
-
 
     while (
         candidates.length > 0
@@ -438,7 +437,6 @@ async function addPendingIce(
 
         const candidate =
             candidates.shift();
-
 
         try {
 
@@ -448,20 +446,16 @@ async function addPendingIce(
                 )
             );
 
-        }
-
-        catch (error) {
+        } catch (error) {
 
             console.error(
                 "ICE pending error:",
                 error
             );
-
         }
-
     }
-
 }
+
 // ==========================================
 // SHOW REMOTE VIDEO
 // ==========================================
@@ -471,6 +465,7 @@ function showRemoteVideo(
     name,
     stream
 ) {
+
     // ======================================
     // MAIN REMOTE VIDEO
     // ======================================
@@ -488,7 +483,6 @@ function showRemoteVideo(
 
         remoteVideo.controls =
             false;
-
     }
     // ======================================
     // VIDEO CONTAINER
@@ -499,15 +493,12 @@ function showRemoteVideo(
     ) {
 
         return;
-
     }
-
 
     let card =
         document.getElementById(
             "user-" + socketId
         );
-
 
     if (!card) {
 
@@ -516,20 +507,16 @@ function showRemoteVideo(
                 "div"
             );
 
-
         card.className =
             "user-video-card";
 
-
         card.id =
             "user-" + socketId;
-
 
         const video =
             document.createElement(
                 "video"
             );
-
 
         video.autoplay =
             true;
@@ -543,41 +530,34 @@ function showRemoteVideo(
         video.className =
             "remote-user-video";
 
-
         const nameDiv =
             document.createElement(
                 "div"
             );
 
-
         nameDiv.className =
             "user-name";
 
-
         nameDiv.innerText =
             name || "Guest";
-
 
         card.appendChild(
             video
         );
 
-
         card.appendChild(
             nameDiv
         );
 
-
         userVideoContainer.appendChild(
             card
         );
-
     }
+
     const video =
         card.querySelector(
             "video"
         );
-
 
     if (video) {
 
@@ -593,10 +573,8 @@ function showRemoteVideo(
         video.muted =
             true;
 
-
         const playPromise =
             video.play();
-
 
         if (
             playPromise &&
@@ -611,15 +589,12 @@ function showRemoteVideo(
                         "Remote video autoplay:",
                         error
                     );
-
                 }
             );
-
         }
-
     }
-
 }
+
 // ==========================================
 // REMOVE REMOTE USER
 // ==========================================
@@ -633,7 +608,6 @@ function removeRemoteUser(
             socketId
         ];
 
-
     if (peer) {
 
         try {
@@ -645,40 +619,31 @@ function removeRemoteUser(
         delete peerConnections[
             socketId
         ];
-
     }
-
 
     delete pendingIceCandidates[
         socketId
     ];
 
-
     delete remoteUserNames[
         socketId
     ];
-
 
     const card =
         document.getElementById(
             "user-" + socketId
         );
 
-
     if (card) {
 
         card.remove();
-
     }
-
 
     if (remoteVideo) {
 
         remoteVideo.srcObject =
             null;
-
     }
-
 }
 // ==========================================
 // START CAMERA + MIC
@@ -694,7 +659,11 @@ async function startCamera() {
         !navigator.mediaDevices ||
         !navigator.mediaDevices.getUserMedia
     ) {
-        alert("Camera/Microphone is not supported.");
+
+        alert(
+            "Camera/Microphone is not supported."
+        );
+
         return false;
     }
 
@@ -706,9 +675,11 @@ async function startCamera() {
         // CAMERA
         videoStream =
             await navigator.mediaDevices.getUserMedia({
+
                 video: {
                     facingMode: "user"
                 },
+
                 audio: false
             });
 
@@ -717,7 +688,9 @@ async function startCamera() {
 
             audioStream =
                 await navigator.mediaDevices.getUserMedia({
+
                     video: false,
+
                     audio: true
                 });
 
@@ -730,7 +703,10 @@ async function startCamera() {
 
             videoStream
                 .getTracks()
-                .forEach(track => track.stop());
+                .forEach(
+                    track =>
+                        track.stop()
+                );
 
             alert(
                 "Microphone could not start: " +
@@ -743,8 +719,13 @@ async function startCamera() {
         // COMBINE CAMERA + MIC
         localStream =
             new MediaStream([
-                ...videoStream.getVideoTracks(),
-                ...audioStream.getAudioTracks()
+
+                ...videoStream
+                    .getVideoTracks(),
+
+                ...audioStream
+                    .getAudioTracks()
+
             ]);
 
         // SHOW LOCAL VIDEO
@@ -763,8 +744,11 @@ async function startCamera() {
                 true;
 
             try {
+
                 await localVideo.play();
+
             } catch (error) {
+
                 console.log(
                     "Local video play:",
                     error
@@ -777,7 +761,8 @@ async function startCamera() {
                 .getVideoTracks()
                 .some(
                     track =>
-                        track.readyState === "live"
+                        track.readyState ===
+                        "live"
                 );
 
         micOn =
@@ -785,7 +770,8 @@ async function startCamera() {
                 .getAudioTracks()
                 .some(
                     track =>
-                        track.readyState === "live"
+                        track.readyState ===
+                        "live"
                 );
 
         updateMediaButtons();
@@ -793,38 +779,42 @@ async function startCamera() {
         // ADD MEDIA TO EXISTING PEERS
         Object.values(
             peerConnections
-        ).forEach(peer => {
+        ).forEach(
+            peer => {
 
-            localStream
-                .getTracks()
-                .forEach(track => {
+                localStream
+                    .getTracks()
+                    .forEach(
+                        track => {
 
-                    const sender =
-                        peer
-                            .getSenders()
-                            .find(
-                                item =>
-                                    item.track &&
-                                    item.track.kind ===
-                                        track.kind
-                            );
+                            const sender =
+                                peer
+                                    .getSenders()
+                                    .find(
+                                        item =>
+                                            item.track &&
+                                            item.track.kind ===
+                                            track.kind
+                                    );
 
-                    if (sender) {
+                            if (sender) {
 
-                        sender.replaceTrack(track);
+                                sender
+                                    .replaceTrack(
+                                        track
+                                    );
 
-                    } else {
+                            } else {
 
-                        peer.addTrack(
-                            track,
-                            localStream
-                        );
-
-                    }
-
-                });
-
-        });
+                                peer.addTrack(
+                                    track,
+                                    localStream
+                                );
+                            }
+                        }
+                    );
+            }
+        );
 
         console.log(
             "Camera + Microphone ready."
@@ -843,20 +833,26 @@ async function startCamera() {
 
             videoStream
                 .getTracks()
-                .forEach(track => track.stop());
-
+                .forEach(
+                    track =>
+                        track.stop()
+                );
         }
 
         if (audioStream) {
 
             audioStream
                 .getTracks()
-                .forEach(track => track.stop());
-
+                .forEach(
+                    track =>
+                        track.stop()
+                );
         }
 
         localStream = null;
+
         cameraOn = false;
+
         micOn = false;
 
         updateMediaButtons();
@@ -869,6 +865,7 @@ async function startCamera() {
         return false;
     }
 }
+
 // ==========================================
 // MEDIA BUTTON UI
 // ==========================================
@@ -881,9 +878,7 @@ function updateMediaButtons() {
             cameraOn
                 ? "📷 Camera ON"
                 : "🚫 Camera OFF";
-
     }
-
 
     if (micBtn) {
 
@@ -891,9 +886,7 @@ function updateMediaButtons() {
             micOn
                 ? "🎤 Mic ON"
                 : "🔇 Mic OFF";
-
     }
-
 
     if (screenBtn) {
 
@@ -901,10 +894,9 @@ function updateMediaButtons() {
             screenSharing
                 ? "🛑 Stop Share"
                 : "🖥 Screen Share";
-
     }
-
 }
+
 // ==========================================
 // CAMERA BUTTON
 // ==========================================
@@ -915,20 +907,16 @@ if (cameraBtn) {
         "click",
         async function () {
 
-            // First click = start camera
             if (!localStream) {
 
                 await startCamera();
 
                 return;
-
             }
-
 
             const tracks =
                 localStream
                     .getVideoTracks();
-
 
             if (
                 tracks.length === 0
@@ -937,30 +925,24 @@ if (cameraBtn) {
                 await startCamera();
 
                 return;
-
             }
-
 
             cameraOn =
                 !cameraOn;
-
 
             tracks.forEach(
                 track => {
 
                     track.enabled =
                         cameraOn;
-
                 }
             );
 
-
             updateMediaButtons();
-
         }
     );
-
 }
+
 // ==========================================
 // MIC BUTTON
 // ==========================================
@@ -971,20 +953,16 @@ if (micBtn) {
         "click",
         async function () {
 
-            // First click = start media
             if (!localStream) {
 
                 await startCamera();
 
                 return;
-
             }
-
 
             const tracks =
                 localStream
                     .getAudioTracks();
-
 
             if (
                 tracks.length === 0
@@ -993,30 +971,822 @@ if (micBtn) {
                 await startCamera();
 
                 return;
-
             }
-
 
             micOn =
                 !micOn;
-
 
             tracks.forEach(
                 track => {
 
                     track.enabled =
                         micOn;
-
                 }
             );
 
+            updateMediaButtons();
+        }
+    );
+}
+// ==========================================
+// ANDROID SCREEN FRAME
+// ==========================================
+
+window.__smartMeetNativeScreenFrame = function(base64) {
+
+        if (
+            !screenSharing ||
+            !androidScreenCanvas ||
+            !androidScreenContext
+        ) {
+
+            return;
+        }
+
+        const now =
+            Date.now();
+
+        if (
+            now -
+            androidLastFrameTime <
+            ANDROID_FRAME_INTERVAL
+        ) {
+
+            return;
+        }
+
+        if (androidFrameBusy) {
+            return;
+        }
+
+        androidFrameBusy =
+            true;
+
+        androidLastFrameTime =
+            now;
+
+        const image =
+            new Image();
+
+        androidScreenImage =
+            image;
+
+        image.onload =
+            function () {
+
+                try {
+
+                    if (
+                        !androidScreenCanvas ||
+                        !androidScreenContext
+                    ) {
+
+                        return;
+                    }
+
+                    if (
+                        androidScreenCanvas.width !==
+                        image.naturalWidth
+                    ) {
+
+                        androidScreenCanvas.width =
+                            image.naturalWidth;
+                    }
+
+                    if (
+                        androidScreenCanvas.height !==
+                        image.naturalHeight
+                    ) {
+
+                        androidScreenCanvas.height =
+                            image.naturalHeight;
+                    }
+
+                    androidScreenContext.drawImage(
+                        image,
+                        0,
+                        0,
+                        androidScreenCanvas.width,
+                        androidScreenCanvas.height
+                    );
+
+                } catch (error) {
+
+                    console.error(
+                        "Android frame draw error:",
+                        error
+                    );
+
+                } finally {
+
+                    androidFrameBusy =
+                        false;
+
+                    androidScreenImage =
+                        null;
+                }
+            };
+
+        image.onerror =
+            function () {
+
+                androidFrameBusy =
+                    false;
+
+                androidScreenImage =
+                    null;
+            };
+
+        image.src =
+            "data:image/jpeg;base64," +
+            base64;
+    };
+
+// ==========================================
+// ANDROID SCREEN SHARE STARTED
+// ==========================================
+
+window.onAndroidScreenShareStarted =
+    async function () {
+
+        console.log(
+            "Android native screen capture started."
+        );
+
+        try {
+
+            if (
+                androidScreenStream
+            ) {
+
+                return;
+            }
+
+            // ==================================
+            // CREATE CANVAS
+            // ==================================
+
+            androidScreenCanvas =
+                document.createElement(
+                    "canvas"
+                );
+
+            androidScreenCanvas.width =
+                1280;
+
+            androidScreenCanvas.height =
+                720;
+
+            androidScreenCanvas.style.display =
+                "none";
+
+            document.body.appendChild(
+                androidScreenCanvas
+            );
+
+            androidScreenContext =
+                androidScreenCanvas.getContext(
+                    "2d"
+                );
+
+            if (
+                !androidScreenContext
+            ) {
+
+                throw new Error(
+                    "Canvas is not available."
+                );
+            }
+
+            // ==================================
+            // CANVAS → MEDIA STREAM
+            // ==================================
+
+            if (
+                typeof androidScreenCanvas
+                    .captureStream !==
+                "function"
+            ) {
+
+                throw new Error(
+                    "Canvas screen sharing is not supported by this WebView."
+                );
+            }
+
+            androidScreenStream =
+                androidScreenCanvas
+                    .captureStream(10);
+
+            androidScreenTrack =
+                androidScreenStream
+                    .getVideoTracks()[0];
+
+            if (
+                !androidScreenTrack
+            ) {
+
+                throw new Error(
+                    "Unable to create screen video track."
+                );
+            }
+
+            // ==================================
+            // SCREEN SHARE ACTIVE
+            // ==================================
+
+            screenStream =
+                androidScreenStream;
+
+            screenSharing =
+                true;
 
             updateMediaButtons();
 
+            // ==================================
+            // SHOW SCREEN LOCALLY
+            // ==================================
+
+            if (localVideo) {
+
+                localVideo.srcObject =
+                    androidScreenStream;
+
+                localVideo.autoplay =
+                    true;
+
+                localVideo.playsInline =
+                    true;
+
+                localVideo.muted =
+                    true;
+
+                try {
+
+                    await localVideo.play();
+
+                } catch (error) {
+
+                    console.log(
+                        "Android screen local play:",
+                        error
+                    );
+                }
+            }
+
+            // ==================================
+            // REPLACE VIDEO TRACK
+            // ==================================
+
+            Object.values(
+                peerConnections
+            ).forEach(
+                async peer => {
+
+                    const sender =
+                        peer
+                            .getSenders()
+                            .find(
+                                item =>
+                                    item.track &&
+                                    item.track.kind ===
+                                    "video"
+                            );
+
+                    if (sender) {
+
+                        try {
+
+                            await sender.replaceTrack(
+                                androidScreenTrack
+                            );
+
+                        } catch (error) {
+
+                            console.error(
+                                "Android screen replace error:",
+                                error
+                            );
+                        }
+                    }
+                }
+            );
+
+            console.log(
+                "Android screen track connected to WebRTC."
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Android screen share setup error:",
+                error
+            );
+
+            screenSharing =
+                false;
+
+            updateMediaButtons();
+
+            alert(
+                "Android Screen Share error: " +
+                error.message
+            );
+
+            if (
+                typeof AndroidBridge !==
+                "undefined"
+            ) {
+
+                try {
+
+                    AndroidBridge.stopScreenShare();
+
+                } catch (e) {}
+            }
+        }
+    };
+    // ==========================================
+// ANDROID SCREEN SHARE ERROR
+// ==========================================
+
+window.onAndroidScreenShareError =
+    function (message) {
+
+        console.error(
+            "Android screen share error:",
+            message
+        );
+
+        screenSharing =
+            false;
+
+        updateMediaButtons();
+
+        alert(
+            "Screen Share error: " +
+            (message || "Unknown error")
+        );
+    };
+
+// ==========================================
+// ANDROID SCREEN SHARE STOPPED
+// ==========================================
+
+window.__smartMeetNativeScreenStopped = async function() {
+
+        console.log(
+            "Android native screen share stopped."
+        );
+
+        await restoreCameraAfterScreenShare();
+    };
+
+// ==========================================
+// RESTORE CAMERA
+// ==========================================
+
+async function restoreCameraAfterScreenShare() {
+
+    screenSharing =
+        false;
+
+    // ==================================
+    // STOP ANDROID STREAM
+    // ==================================
+
+    if (
+        androidScreenStream
+    ) {
+
+        androidScreenStream
+            .getTracks()
+            .forEach(
+                track => {
+
+                    try {
+                        track.stop();
+                    }
+
+                    catch (error) {}
+                }
+            );
+    }
+
+    androidScreenStream =
+        null;
+
+    androidScreenTrack =
+        null;
+
+    // ==================================
+    // REMOVE CANVAS
+    // ==================================
+
+    if (
+        androidScreenCanvas
+    ) {
+
+        try {
+            androidScreenCanvas.remove();
+        }
+
+        catch (error) {}
+    }
+
+    androidScreenCanvas =
+        null;
+
+    androidScreenContext =
+        null;
+
+    androidScreenImage =
+        null;
+
+    androidFrameBusy =
+        false;
+
+    androidLastFrameTime =
+        0;
+
+    // ==================================
+    // RESTORE CAMERA
+    // ==================================
+
+    if (
+        localStream
+    ) {
+
+        const cameraTrack =
+            localStream
+                .getVideoTracks()[0];
+
+        if (cameraTrack) {
+
+            cameraTrack.enabled =
+                cameraOn;
+
+            if (localVideo) {
+
+                localVideo.srcObject =
+                    localStream;
+
+                localVideo.autoplay =
+                    true;
+
+                localVideo.playsInline =
+                    true;
+
+                localVideo.muted =
+                    true;
+
+                try {
+
+                    await localVideo.play();
+
+                } catch (error) {
+
+                    console.log(
+                        "Camera restore play:",
+                        error
+                    );
+                }
+            }
+
+            Object.values(
+                peerConnections
+            ).forEach(
+                async peer => {
+
+                    const sender =
+                        peer
+                            .getSenders()
+                            .find(
+                                item =>
+                                    item.track &&
+                                    item.track.kind ===
+                                    "video"
+                            );
+
+                    if (sender) {
+
+                        try {
+
+                            await sender.replaceTrack(
+                                cameraTrack
+                            );
+
+                        } catch (error) {
+
+                            console.error(
+                                "Camera restore error:",
+                                error
+                            );
+                        }
+                    }
+                }
+            );
+        }
+    }
+
+    screenStream =
+        null;
+
+    updateMediaButtons();
+}
+
+// ==========================================
+// DESKTOP SCREEN SHARE STOP
+// ==========================================
+
+function stopScreenShare() {
+
+    // ==================================
+    // ANDROID
+    // ==================================
+
+    if (
+        /Android/i.test(
+            navigator.userAgent
+        ) &&
+        typeof AndroidBridge !==
+            "undefined"
+    ) {
+
+        try {
+
+            AndroidBridge.stopScreenShare();
+
+        } catch (error) {
+
+            console.error(
+                "Android stop screen error:",
+                error
+            );
+
+            restoreCameraAfterScreenShare();
+        }
+
+        return;
+    }
+
+    // ==================================
+    // DESKTOP
+    // ==================================
+
+    if (
+        screenStream
+    ) {
+
+        screenStream
+            .getTracks()
+            .forEach(
+                track => {
+
+                    try {
+                        track.stop();
+                    }
+
+                    catch (error) {}
+                }
+            );
+    }
+
+    screenStream =
+        null;
+
+    screenSharing =
+        false;
+
+    // ==================================
+    // RESTORE CAMERA
+    // ==================================
+
+    if (
+        localStream
+    ) {
+
+        const cameraTrack =
+            localStream
+                .getVideoTracks()[0];
+
+        if (cameraTrack) {
+
+            if (localVideo) {
+
+                localVideo.srcObject =
+                    localStream;
+            }
+
+            Object.values(
+                peerConnections
+            ).forEach(
+                async peer => {
+
+                    const sender =
+                        peer
+                            .getSenders()
+                            .find(
+                                item =>
+                                    item.track &&
+                                    item.track.kind ===
+                                    "video"
+                            );
+
+                    if (sender) {
+
+                        try {
+
+                            await sender.replaceTrack(
+                                cameraTrack
+                            );
+
+                        } catch (error) {
+
+                            console.error(
+                                "Desktop camera restore error:",
+                                error
+                            );
+                        }
+                    }
+                }
+            );
+        }
+    }
+
+    updateMediaButtons();
+}
+// ==========================================
+// SCREEN SHARE BUTTON
+// ==========================================
+
+if (screenBtn) {
+
+    screenBtn.addEventListener(
+        "click",
+        async function () {
+
+            console.log(
+                "SCREEN SHARE BUTTON CLICKED"
+            );
+
+            // ==================================
+            // STOP CURRENT SHARE
+            // ==================================
+
+            if (screenSharing) {
+
+                stopScreenShare();
+
+                return;
+            }
+
+            // ==================================
+            // ANDROID NATIVE SCREEN SHARE
+            // ==================================
+
+            if (
+                /Android/i.test(
+                    navigator.userAgent
+                ) &&
+                typeof AndroidBridge !==
+                    "undefined"
+            ) {
+
+                try {
+
+                    AndroidBridge.startScreenShare();
+
+                } catch (error) {
+
+                    console.error(
+                        "Native screen share error:",
+                        error
+                    );
+
+                    alert(
+                        "Screen Share error: " +
+                        error.message
+                    );
+                }
+
+                return;
+            }
+
+            // ==================================
+            // DESKTOP SCREEN SHARE
+            // ==================================
+
+            if (
+                !navigator.mediaDevices ||
+                !navigator.mediaDevices.getDisplayMedia
+            ) {
+
+                alert(
+                    "This browser does not support screen sharing."
+                );
+
+                return;
+            }
+
+            try {
+
+                screenStream =
+                    await navigator.mediaDevices
+                        .getDisplayMedia({
+
+                            video: true,
+
+                            audio: false
+                        });
+
+                const screenTrack =
+                    screenStream
+                        .getVideoTracks()[0];
+
+                if (!screenTrack) {
+
+                    return;
+                }
+
+                screenSharing =
+                    true;
+
+                updateMediaButtons();
+
+                // ==================================
+                // LOCAL SCREEN
+                // ==================================
+
+                if (localVideo) {
+
+                    localVideo.srcObject =
+                        screenStream;
+                }
+
+                // ==================================
+                // SEND SCREEN TO PEERS
+                // ==================================
+
+                Object.values(
+                    peerConnections
+                ).forEach(
+                    async peer => {
+
+                        const sender =
+                            peer
+                                .getSenders()
+                                .find(
+                                    item =>
+                                        item.track &&
+                                        item.track.kind ===
+                                        "video"
+                                );
+
+                        if (sender) {
+
+                            try {
+
+                                await sender.replaceTrack(
+                                    screenTrack
+                                );
+
+                            } catch (error) {
+
+                                console.error(
+                                    "Screen replace error:",
+                                    error
+                                );
+                            }
+                        }
+                    }
+                );
+
+                // ==================================
+                // SYSTEM STOP
+                // ==================================
+
+                screenTrack.onended =
+                    function () {
+
+                        stopScreenShare();
+                    };
+
+            } catch (error) {
+
+                console.error(
+                    "Screen share error:",
+                    error
+                );
+
+                screenSharing =
+                    false;
+
+                updateMediaButtons();
+            }
         }
     );
-
 }
+
 // ==========================================
 // SOCKET CONNECT
 // ==========================================
@@ -1030,8 +1800,6 @@ socket.on(
             socket.id
         );
 
-
-        // Join only after Socket.IO connection
         socket.emit(
             "join-meeting",
             {
@@ -1041,13 +1809,10 @@ socket.on(
 
                 userName:
                     userName
-
             }
         );
-
     }
 );
-
 
 // ==========================================
 // SOCKET CONNECT ERROR
@@ -1061,10 +1826,8 @@ socket.on(
             "Socket connection error:",
             error
         );
-
     }
 );
-
 
 // ==========================================
 // PARTICIPANTS
@@ -1079,13 +1842,10 @@ socket.on(
         ) {
 
             return;
-
         }
-
 
         participantsElement.innerHTML =
             "";
-
 
         if (
             !Array.isArray(users) ||
@@ -1096,9 +1856,7 @@ socket.on(
                 "<p>No participants</p>";
 
             return;
-
         }
-
 
         users.forEach(
             function (user) {
@@ -1108,11 +1866,9 @@ socket.on(
                         "p"
                     );
 
-
                 let name =
                     user.userName ||
                     "Guest";
-
 
                 if (
                     name === "Host"
@@ -1120,24 +1876,20 @@ socket.on(
 
                     name =
                         "👑 Host";
-
                 }
-
 
                 p.innerText =
                     "🟢 " + name;
-
 
                 participantsElement
                     .appendChild(
                         p
                     );
-
             }
         );
-
     }
 );
+
 // ==========================================
 // USER JOINED
 // ==========================================
@@ -1151,22 +1903,15 @@ socket.on(
             data
         );
 
-
         if (
             !data ||
             !data.socketId
         ) {
 
             return;
-
         }
 
-
         try {
-
-            // Existing user creates offer.
-            // Camera is NOT forced automatically;
-            // user can start it using Camera button.
 
             const peer =
                 createPeerConnection(
@@ -1174,15 +1919,12 @@ socket.on(
                     data.userName
                 );
 
-
             const offer =
                 await peer.createOffer();
-
 
             await peer.setLocalDescription(
                 offer
             );
-
 
             socket.emit(
                 "webrtc-offer",
@@ -1193,28 +1935,23 @@ socket.on(
 
                     offer:
                         offer
-
                 }
             );
-
 
             console.log(
                 "Offer sent."
             );
 
-        }
-
-        catch (error) {
+        } catch (error) {
 
             console.error(
                 "Offer error:",
                 error
             );
-
         }
-
     }
 );
+
 // ==========================================
 // RECEIVE OFFER
 // ==========================================
@@ -1228,16 +1965,13 @@ socket.on(
             data
         );
 
-
         if (
             !data ||
             !data.fromSocketId
         ) {
 
             return;
-
         }
-
 
         try {
 
@@ -1247,27 +1981,22 @@ socket.on(
                     data.userName
                 );
 
-
             await peer.setRemoteDescription(
                 new RTCSessionDescription(
                     data.offer
                 )
             );
 
-
             await addPendingIce(
                 data.fromSocketId
             );
 
-
             const answer =
                 await peer.createAnswer();
-
 
             await peer.setLocalDescription(
                 answer
             );
-
 
             socket.emit(
                 "webrtc-answer",
@@ -1278,26 +2007,20 @@ socket.on(
 
                     answer:
                         answer
-
                 }
             );
-
 
             console.log(
                 "Answer sent."
             );
 
-        }
-
-        catch (error) {
+        } catch (error) {
 
             console.error(
                 "Offer handling error:",
                 error
             );
-
         }
-
     }
 );
 // ==========================================
@@ -1314,9 +2037,7 @@ socket.on(
         ) {
 
             return;
-
         }
-
 
         try {
 
@@ -1325,13 +2046,10 @@ socket.on(
                     data.fromSocketId
                 ];
 
-
             if (!peer) {
 
                 return;
-
             }
-
 
             await peer.setRemoteDescription(
                 new RTCSessionDescription(
@@ -1339,25 +2057,19 @@ socket.on(
                 )
             );
 
-
             await addPendingIce(
                 data.fromSocketId
             );
 
-        }
-
-        catch (error) {
+        } catch (error) {
 
             console.error(
                 "Answer error:",
                 error
             );
-
         }
-
     }
 );
-
 
 // ==========================================
 // RECEIVE ICE
@@ -1374,26 +2086,20 @@ socket.on(
         ) {
 
             return;
-
         }
-
 
         const socketId =
             data.fromSocketId;
-
 
         const peer =
             peerConnections[
                 socketId
             ];
 
-
         if (!peer) {
 
             return;
-
         }
-
 
         if (
             !peer.remoteDescription ||
@@ -1409,9 +2115,7 @@ socket.on(
                 pendingIceCandidates[
                     socketId
                 ] = [];
-
             }
-
 
             pendingIceCandidates[
                 socketId
@@ -1419,11 +2123,8 @@ socket.on(
                 data.candidate
             );
 
-
             return;
-
         }
-
 
         try {
 
@@ -1433,19 +2134,16 @@ socket.on(
                 )
             );
 
-        }
-
-        catch (error) {
+        } catch (error) {
 
             console.error(
                 "ICE error:",
                 error
             );
-
         }
-
     }
 );
+
 // ==========================================
 // USER LEFT
 // ==========================================
@@ -1460,17 +2158,13 @@ socket.on(
         ) {
 
             return;
-
         }
-
 
         removeRemoteUser(
             data.socketId
         );
-
     }
 );
-
 
 // ==========================================
 // MEETING ENDED
@@ -1478,7 +2172,6 @@ socket.on(
 
 let meetingEndedHandled =
     false;
-
 
 socket.on(
     "meeting-ended",
@@ -1489,31 +2182,24 @@ socket.on(
         ) {
 
             return;
-
         }
-
 
         meetingEndedHandled =
             true;
-
 
         console.log(
             "Meeting ended:",
             data
         );
 
-
         if (timerInterval) {
 
             clearInterval(
                 timerInterval
             );
-
         }
 
-
         stopAllMedia();
-
 
         Object.values(
             peerConnections
@@ -1525,63 +2211,51 @@ socket.on(
                 }
 
                 catch (error) {}
-
             }
         );
-
 
         try {
 
             socket.disconnect();
 
-        }
-
-        catch (error) {}
-
+        } catch (error) {}
 
         localStorage.removeItem(
             "meetingStarted"
         );
 
-
         localStorage.removeItem(
             "joinedUser"
         );
-
 
         alert(
             data?.message ||
             "Host has ended the meeting."
         );
 
-
         window.location.href =
             "dashboard.html";
-
     }
 );
+
 // ==========================================
 // CHAT SEND
 // ==========================================
+
 function sendMessage() {
 
     if (!chatBox) {
 
         return;
-
     }
-
 
     const message =
         chatBox.value.trim();
 
-
     if (!message) {
 
         return;
-
     }
-
 
     if (!socket.connected) {
 
@@ -1590,9 +2264,7 @@ function sendMessage() {
         );
 
         return;
-
     }
-
 
     socket.emit(
         "send-message",
@@ -1606,16 +2278,12 @@ function sendMessage() {
 
             message:
                 message
-
         }
     );
 
-
     chatBox.value =
         "";
-
 }
-
 
 if (sendBtn) {
 
@@ -1623,9 +2291,7 @@ if (sendBtn) {
         "click",
         sendMessage
     );
-
 }
-
 
 if (chatBox) {
 
@@ -1641,13 +2307,11 @@ if (chatBox) {
                 event.preventDefault();
 
                 sendMessage();
-
             }
-
         }
     );
-
 }
+
 // ==========================================
 // RECEIVE CHAT
 // ==========================================
@@ -1659,15 +2323,12 @@ socket.on(
         if (!messages) {
 
             return;
-
         }
-
 
         const div =
             document.createElement(
                 "div"
             );
-
 
         div.style.padding =
             "8px";
@@ -1681,22 +2342,18 @@ socket.on(
         div.style.borderRadius =
             "8px";
 
-
         const strong =
             document.createElement(
                 "strong"
             );
 
-
         strong.innerText =
             (data.userName || "Guest") +
             ": ";
 
-
         div.appendChild(
             strong
         );
-
 
         div.appendChild(
             document.createTextNode(
@@ -1704,18 +2361,14 @@ socket.on(
             )
         );
 
-
         messages.appendChild(
             div
         );
 
-
         messages.scrollTop =
             messages.scrollHeight;
-
     }
 );
-
 
 // ==========================================
 // COPY MEETING ID
@@ -1732,7 +2385,6 @@ if (copyBtn) {
                 const text =
                     String(meetingId);
 
-
                 if (
                     navigator.clipboard &&
                     window.isSecureContext
@@ -1741,9 +2393,7 @@ if (copyBtn) {
                     await navigator.clipboard
                         .writeText(text);
 
-                }
-
-                else {
+                } else {
 
                     const temp =
                         document.createElement(
@@ -1764,29 +2414,21 @@ if (copyBtn) {
                     );
 
                     temp.remove();
-
                 }
-
 
                 alert(
                     "Meeting ID copied!"
                 );
 
-            }
-
-            catch (error) {
+            } catch (error) {
 
                 alert(
                     "Unable to copy Meeting ID."
                 );
-
             }
-
         }
     );
-
 }
-
 
 // ==========================================
 // TIMER
@@ -1798,31 +2440,25 @@ let remainingSeconds =
 let timerInterval =
     null;
 
-
 function updateTimer() {
 
     if (!timerElement) {
 
         return;
-
     }
-
 
     const hours =
         Math.floor(
             remainingSeconds / 3600
         );
 
-
     const minutes =
         Math.floor(
             (remainingSeconds % 3600) / 60
         );
 
-
     const seconds =
         remainingSeconds % 60;
-
 
     timerElement.innerText =
         String(hours).padStart(2, "0") +
@@ -1830,7 +2466,6 @@ function updateTimer() {
         String(minutes).padStart(2, "0") +
         ":" +
         String(seconds).padStart(2, "0");
-
 
     if (
         remainingSeconds <= 0
@@ -1840,332 +2475,92 @@ function updateTimer() {
             timerInterval
         );
 
-
         endMeeting();
 
         return;
-
     }
 
-
     remainingSeconds--;
-
 }
 
-
 updateTimer();
-
 
 timerInterval =
     setInterval(
         updateTimer,
         1000
     );
-// ==========================================
-// SCREEN SHARE
-// ==========================================
 
-if (screenBtn) {
-
-    screenBtn.addEventListener(
-        "click",
-        async function () {
-
-            alert("SCREEN BUTTON CLICKED");
-
-    // ==========================================
-// ANDROID APP → NATIVE SCREEN SHARE
-// ==========================================
-
-if (
-    /Android/i.test(navigator.userAgent) &&
-    typeof AndroidBridge !== "undefined"
-) {
-
-    try {
-
-        AndroidBridge.startScreenShare();
-
-    } catch (error) {
-
-        console.error(
-            "Native screen share error:",
-            error
-        );
-
-        alert(
-            "Screen Share error: " +
-            error.message
-        );
-    }
-
-    return;
-}
-
-            // ==================================
-            // STOP SCREEN SHARING
-            // ==================================
-
-            if (screenSharing) {
-
-                stopScreenShare();
-
-                return;
-
-            }
-
-
-            // ==================================
-            // CHECK SCREEN SHARE SUPPORT
-            // ==================================
-
-            if (
-                !navigator.mediaDevices ||
-                !navigator.mediaDevices.getDisplayMedia
-            ) {
-
-                alert(
-                    "This browser does not support screen sharing."
-                );
-
-                return;
-
-            }
-
-
-            // ==================================
-            // START SCREEN SHARE
-            // ==================================
-
-            try {
-
-                screenStream =
-                    await navigator.mediaDevices
-                        .getDisplayMedia({
-
-                            video: true,
-
-                            audio: false
-
-                        });
-
-
-                const screenTrack =
-                    screenStream
-                        .getVideoTracks()[0];
-
-
-                if (!screenTrack) {
-
-                    return;
-
-                }
-
-
-                screenSharing =
-                    true;
-
-
-                updateMediaButtons();
-
-
-                // ==================================
-                // SHOW SCREEN LOCALLY
-                // ==================================
-
-                if (localVideo) {
-
-                    localVideo.srcObject =
-                        screenStream;
-
-                }
-
-
-                // ==================================
-                // SEND SCREEN TRACK TO PEERS
-                // ==================================
-
-                Object.values(
-                    peerConnections
-                ).forEach(
-                    async peer => {
-
-                        const sender =
-                            peer.getSenders()
-                                .find(
-                                    item =>
-                                        item.track &&
-                                        item.track.kind ===
-                                            "video"
-                                );
-
-
-                        if (sender) {
-
-                            try {
-
-                                await sender
-                                    .replaceTrack(
-                                        screenTrack
-                                    );
-
-                            }
-
-                            catch (error) {
-
-                                console.error(
-                                    "Screen replace error:",
-                                    error
-                                );
-
-                            }
-
-                        }
-
-                    }
-                );
-
-
-                // ==================================
-                // SCREEN SHARE STOPPED BY SYSTEM
-                // ==================================
-
-                screenTrack.onended =
-                    function () {
-
-                        stopScreenShare();
-
-                    };
-
-            }
-
-            catch (error) {
-
-                console.error(
-                    "Screen share error:",
-                    error
-                );
-
-                screenSharing =
-                    false;
-
-                updateMediaButtons();
-
-            }
-
-        }
-    );
-
-}
-    // ======================================
-    // RESTORE CAMERA
-    // ======================================
-
-    if (localStream) {
-
-        const cameraTrack =
-            localStream
-                .getVideoTracks()[0];
-
-
-        if (cameraTrack) {
-
-            cameraTrack.enabled =
-                cameraOn;
-
-
-            if (localVideo) {
-
-                localVideo.srcObject =
-                    localStream;
-
-            }
-
-
-            Object.values(
-                peerConnections
-            ).forEach(
-                async peer => {
-
-                    const sender =
-                        peer.getSenders()
-                            .find(
-                                item =>
-                                    item.track &&
-                                    item.track.kind ===
-                                        "video"
-                            );
-
-
-                    if (sender) {
-
-                        try {
-
-                            await sender
-                                .replaceTrack(
-                                    cameraTrack
-                                );
-
-                        }
-
-                        catch (error) {
-
-                            console.error(
-                                "Camera restore error:",
-                                error
-                            );
-
-                        }
-
-                    }
-
-                }
-            );
-
-        }
-
-    }
-
-
-    updateMediaButtons();
-
-// ==========================================
-// LEAVE BUTTON
-// ==========================================
-
-if (leaveBtn) {
-
-    leaveBtn.addEventListener(
-        "click",
-        function () {
-
-            const message =
-                isHost
-                    ? "Are you sure you want to end this meeting?"
-                    : "Are you sure you want to leave the meeting?";
-
-
-            const confirmLeave =
-                confirm(message);
-
-
-            if (!confirmLeave) {
-
-                return;
-
-            }
-
-
-            leaveMeeting();
-
-        }
-    );
-
-}
 // ==========================================
 // STOP ALL MEDIA
 // ==========================================
+
 function stopAllMedia() {
+
+    // Android screen share
+    if (
+        /Android/i.test(
+            navigator.userAgent
+        ) &&
+        typeof AndroidBridge !==
+            "undefined" &&
+        screenSharing
+    ) {
+
+        try {
+
+            AndroidBridge.stopScreenShare();
+
+        } catch (error) {}
+    }
+
+    // Native canvas stream
+    if (
+        androidScreenStream
+    ) {
+
+        androidScreenStream
+            .getTracks()
+            .forEach(
+                track => {
+
+                    try {
+                        track.stop();
+                    }
+
+                    catch (error) {}
+                }
+            );
+    }
+
+    androidScreenStream =
+        null;
+
+    androidScreenTrack =
+        null;
+
+    if (
+        androidScreenCanvas
+    ) {
+
+        try {
+            androidScreenCanvas.remove();
+        }
+
+        catch (error) {}
+    }
+
+    androidScreenCanvas =
+        null;
+
+    androidScreenContext =
+        null;
+
+    androidScreenImage =
+        null;
+
+    androidFrameBusy =
+        false;
 
     if (screenStream) {
 
@@ -2179,15 +2574,12 @@ function stopAllMedia() {
                     }
 
                     catch (error) {}
-
                 }
             );
 
         screenStream =
             null;
-
     }
-
 
     if (localStream) {
 
@@ -2201,15 +2593,12 @@ function stopAllMedia() {
                     }
 
                     catch (error) {}
-
                 }
             );
 
         localStream =
             null;
-
     }
-
 
     cameraOn =
         false;
@@ -2220,9 +2609,7 @@ function stopAllMedia() {
     screenSharing =
         false;
 
-
     updateMediaButtons();
-
 }
 // ==========================================
 // LEAVE MEETING
@@ -2237,12 +2624,9 @@ function leaveMeeting() {
         clearInterval(
             timerInterval
         );
-
     }
 
-
     stopAllMedia();
-
 
     Object.values(
         peerConnections
@@ -2254,9 +2638,9 @@ function leaveMeeting() {
             }
 
             catch (error) {}
-
         }
     );
+
     // ======================================
     // TELL SOCKET SERVER
     // ======================================
@@ -2268,8 +2652,8 @@ function leaveMeeting() {
         socket.emit(
             "leave-meeting"
         );
-
     }
+
     // ======================================
     // HOST END DATABASE MEETING
     // ======================================
@@ -2286,7 +2670,6 @@ function leaveMeeting() {
 
                 method:
                     "PUT"
-
             }
         )
         .then(
@@ -2300,7 +2683,6 @@ function leaveMeeting() {
                     "Meeting ended:",
                     data
                 );
-
             }
         )
         .catch(
@@ -2310,16 +2692,45 @@ function leaveMeeting() {
                     "End meeting error:",
                     error
                 );
-
             }
         );
-
     }
+
     finishLeaving();
 }
+
+// ==========================================
+// LEAVE BUTTON
+// ==========================================
+
+if (leaveBtn) {
+
+    leaveBtn.addEventListener(
+        "click",
+        function () {
+
+            const message =
+                isHost
+                    ? "Are you sure you want to end this meeting?"
+                    : "Are you sure you want to leave the meeting?";
+
+            const confirmLeave =
+                confirm(message);
+
+            if (!confirmLeave) {
+
+                return;
+            }
+
+            leaveMeeting();
+        }
+    );
+}
+
 // ==========================================
 // TIMER END
 // ==========================================
+
 function endMeeting() {
 
     if (isHost) {
@@ -2334,7 +2745,6 @@ function endMeeting() {
 
                 method:
                     "PUT"
-
             }
         )
         .then(
@@ -2348,26 +2758,21 @@ function endMeeting() {
                     "Timer end error:",
                     error
                 );
-
             }
         )
         .finally(
             function () {
 
                 finishLeaving();
-
             }
         );
 
-    }
-
-    else {
+    } else {
 
         finishLeaving();
-
     }
-
 }
+
 // ==========================================
 // FINISH LEAVING
 // ==========================================
@@ -2376,31 +2781,23 @@ function finishLeaving() {
 
     stopAllMedia();
 
-
     try {
 
         socket.disconnect();
 
-    }
-
-    catch (error) {}
-
+    } catch (error) {}
 
     localStorage.removeItem(
         "meetingStarted"
     );
 
-
     localStorage.removeItem(
         "joinedUser"
     );
 
-
     window.location.href =
         "dashboard.html";
-
 }
-
 
 // ==========================================
 // PAGE CLOSE / BACK
@@ -2417,11 +2814,10 @@ window.addEventListener(
             socket.emit(
                 "leave-meeting"
             );
-
         }
-
     }
 );
+
 console.log(
     "SmartMeet meeting.js loaded successfully."
 );
