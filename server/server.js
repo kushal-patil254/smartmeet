@@ -573,7 +573,7 @@ io.on("connection", (socket) => {
             socket.userName === "Host"
         ) {
 
-            socket.to(meetingId).emit(
+            socket.emit(
                 "meeting-ended",
                 {
                     meetingId:
