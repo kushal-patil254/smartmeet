@@ -11,23 +11,21 @@ const meetingRoutes = require("./routes/meetingRoutes");
 const app = express();
 const server = http.createServer(app);
 
-
 // ==========================================
 // CORS
 // ==========================================
 
 app.use(cors({
-  origin: [
-    "http://127.0.0.1:5500",
-    "http://localhost:5500",
-    "https://kushal-patil254.github.io"
-],
+    origin: [
+        "http://127.0.0.1:5500",
+        "http://localhost:5500",
+        "https://kushal-patil254.github.io"
+    ],
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"]
 }));
 
 app.use(express.json());
-
 
 // ==========================================
 // SOCKET.IO
@@ -40,7 +38,6 @@ const io = new Server(server, {
     }
 });
 
-
 // ==========================================
 // ROUTES
 // ==========================================
@@ -48,31 +45,25 @@ const io = new Server(server, {
 app.use("/api/auth", authRoutes);
 app.use("/api/meetings", meetingRoutes);
 
-
 // ==========================================
 // PORT
 // ==========================================
 
 const PORT = process.env.PORT || 3000;
 
-
 // ==========================================
 // HOME
 // ==========================================
 
 app.get("/", (req, res) => {
-
     res.send("SmartMeet Server Running 🚀");
-
 });
 
-
 // ==========================================
-// MEETINGS MEMORY
+// MEETING MEMORY
 // ==========================================
 
 const meetings = {};
-
 
 // ==========================================
 // SOCKET.IO CONNECTION
@@ -80,14 +71,10 @@ const meetings = {};
 
 io.on("connection", (socket) => {
 
-    console.log(
-        "User Connected:",
-        socket.id
-    );
-
+    console.log("User Connected:", socket.id);
 
     // ======================================
-    // JOIN MEETING
+    // JOIN REQUEST
     // ======================================
 
     socket.on("join-meeting", (data) => {
@@ -100,76 +87,348 @@ io.on("connection", (socket) => {
             String(data.meetingId);
 
         const userName =
-            data.userName || "Guest";
+            typeof data.userName === "string"
+                ? data.userName
+                : "Guest";
 
+        socket.userName = userName;
+        socket.meetingId = meetingId;
 
-        socket.userName =
-            userName;
+        // ==================================
+        // CREATE ROOM
+        // ==================================
 
-        socket.meetingId =
-            meetingId;
-
-
-        socket.join(meetingId);
-
-
-        // Create meeting room
         if (!meetings[meetingId]) {
 
-            meetings[meetingId] = [];
-
+            meetings[meetingId] = {
+                users: [],
+                pendingRequests: []
+            };
         }
 
+        const meeting =
+            meetings[meetingId];
 
-        // Check duplicate socket
-        const alreadyExists =
-            meetings[meetingId].some(
+        // ==================================
+        // HOST
+        // ==================================
+
+        if (userName === "Host") {
+
+            socket.join(meetingId);
+
+            const alreadyExists =
+                meeting.users.some(
+                    user =>
+                        user.socketId === socket.id
+                );
+
+            if (!alreadyExists) {
+
+                meeting.users.push({
+                    socketId: socket.id,
+                    userName: "Host"
+                });
+            }
+
+            console.log(
+                `HOST joined meeting ${meetingId}`
+            );
+
+            io.to(meetingId).emit(
+                "update-participants",
+                meeting.users
+            );
+
+            // Send existing pending requests
+            meeting.pendingRequests.forEach(
+                request => {
+
+                    socket.emit(
+                        "join-request",
+                        {
+                            socketId:
+                                request.socketId,
+
+                            userName:
+                                request.userName
+                        }
+                    );
+                }
+            );
+
+            return;
+        }
+
+        // ==================================
+        // PARTICIPANT
+        // ==================================
+
+        const alreadyJoined =
+            meeting.users.some(
                 user =>
                     user.socketId === socket.id
             );
 
-
-        if (!alreadyExists) {
-
-            meetings[meetingId].push({
-
-                socketId:
-                    socket.id,
-
-                userName:
-                    userName
-
-            });
-
+        if (alreadyJoined) {
+            return;
         }
 
+        const alreadyPending =
+            meeting.pendingRequests.some(
+                request =>
+                    request.socketId === socket.id
+            );
+
+        if (alreadyPending) {
+            return;
+        }
+
+        meeting.pendingRequests.push({
+            socketId: socket.id,
+            userName: userName
+        });
 
         console.log(
-            `${userName} joined meeting ${meetingId}`
+            `${userName} requested to join meeting ${meetingId}`
         );
 
-
-        // Update participants
-        io.to(meetingId).emit(
-            "update-participants",
-            meetings[meetingId]
+        // Tell participant to wait
+        socket.emit(
+            "join-request-sent",
+            {
+                message:
+                    "Join request sent. Please wait for Host approval."
+            }
         );
 
+        // Find Host
+        const host =
+            meeting.users.find(
+                user =>
+                    user.userName === "Host"
+            );
 
-        // Tell existing users
+        if (host) {
+
+            io.to(host.socketId).emit(
+                "join-request",
+                {
+                    socketId:
+                        socket.id,
+
+                    userName:
+                        userName
+                }
+            );
+
+        } else {
+
+            console.log(
+                `No Host currently connected for ${meetingId}`
+            );
+
+            socket.emit(
+                "join-request-error",
+                {
+                    message:
+                        "Host is not connected."
+                }
+            );
+        }
+    });
+
+    // ======================================
+    // HOST ACCEPTS PARTICIPANT
+    // ======================================
+
+    socket.on("approve-join", (data) => {
+
+        if (!data || !data.targetSocketId) {
+            return;
+        }
+
+        const meetingId =
+            socket.meetingId;
+
+        if (!meetingId) {
+            return;
+        }
+
+        const meeting =
+            meetings[meetingId];
+
+        if (!meeting) {
+            return;
+        }
+
+        // Only Host can approve
+        if (socket.userName !== "Host") {
+            return;
+        }
+
+        const requestIndex =
+            meeting.pendingRequests.findIndex(
+                request =>
+                    request.socketId ===
+                    data.targetSocketId
+            );
+
+        if (requestIndex === -1) {
+            return;
+        }
+
+        const request =
+            meeting.pendingRequests[
+                requestIndex
+            ];
+
+        meeting.pendingRequests.splice(
+            requestIndex,
+            1
+        );
+
+        // Add participant
+        meeting.users.push({
+            socketId:
+                request.socketId,
+
+            userName:
+                request.userName
+        });
+
+        // Make participant join room
+        const participantSocket =
+            io.sockets.sockets.get(
+                request.socketId
+            );
+
+        if (participantSocket) {
+
+            participantSocket.join(
+                meetingId
+            );
+
+            participantSocket.meetingId =
+                meetingId;
+
+            participantSocket.userName =
+                request.userName;
+        }
+
+        console.log(
+            `HOST approved ${request.userName} for meeting ${meetingId}`
+        );
+
+        // Tell participant
+        io.to(
+            request.socketId
+        ).emit(
+            "join-approved",
+            {
+                meetingId:
+                    meetingId,
+
+                message:
+                    "Host approved your request."
+            }
+        );
+
+        // Tell Host
+        socket.emit(
+            "join-approved-host",
+            {
+                socketId:
+                    request.socketId,
+
+                userName:
+                    request.userName
+            }
+        );
+
+        // Tell existing participants
         socket.to(meetingId).emit(
             "user-joined",
             {
                 socketId:
-                    socket.id,
+                    request.socketId,
 
                 userName:
-                    userName
+                    request.userName
             }
         );
 
+        // Update everyone
+        io.to(meetingId).emit(
+            "update-participants",
+            meeting.users
+        );
     });
 
+    // ======================================
+    // HOST REJECTS PARTICIPANT
+    // ======================================
+
+    socket.on("reject-join", (data) => {
+
+        if (!data || !data.targetSocketId) {
+            return;
+        }
+
+        const meetingId =
+            socket.meetingId;
+
+        if (!meetingId) {
+            return;
+        }
+
+        const meeting =
+            meetings[meetingId];
+
+        if (!meeting) {
+            return;
+        }
+
+        // Only Host
+        if (socket.userName !== "Host") {
+            return;
+        }
+
+        const requestIndex =
+            meeting.pendingRequests.findIndex(
+                request =>
+                    request.socketId ===
+                    data.targetSocketId
+            );
+
+        if (requestIndex === -1) {
+            return;
+        }
+
+        const request =
+            meeting.pendingRequests[
+                requestIndex
+            ];
+
+        meeting.pendingRequests.splice(
+            requestIndex,
+            1
+        );
+
+        console.log(
+            `HOST rejected ${request.userName}`
+        );
+
+        io.to(
+            request.socketId
+        ).emit(
+            "join-rejected",
+            {
+                message:
+                    "Host rejected your join request."
+            }
+        );
+    });
 
     // ======================================
     // CHAT
@@ -177,10 +436,13 @@ io.on("connection", (socket) => {
 
     socket.on("send-message", (data) => {
 
-        if (!data || !data.meetingId) {
+        if (
+            !data ||
+            !data.meetingId ||
+            !data.message
+        ) {
             return;
         }
-
 
         io.to(
             String(data.meetingId)
@@ -188,15 +450,15 @@ io.on("connection", (socket) => {
             "receive-message",
             {
                 userName:
-                    data.userName || "Guest",
+                    socket.userName ||
+                    data.userName ||
+                    "Guest",
 
                 message:
-                    data.message || ""
+                    String(data.message)
             }
         );
-
     });
-
 
     // ======================================
     // WEBRTC OFFER
@@ -204,12 +466,16 @@ io.on("connection", (socket) => {
 
     socket.on("webrtc-offer", (data) => {
 
-        if (!data || !data.targetSocketId) {
+        if (
+            !data ||
+            !data.targetSocketId
+        ) {
             return;
         }
 
-
-        io.to(data.targetSocketId).emit(
+        io.to(
+            data.targetSocketId
+        ).emit(
             "webrtc-offer",
             {
                 offer:
@@ -219,12 +485,11 @@ io.on("connection", (socket) => {
                     socket.id,
 
                 userName:
-                    socket.userName || "Guest"
+                    socket.userName ||
+                    "Guest"
             }
         );
-
     });
-
 
     // ======================================
     // WEBRTC ANSWER
@@ -232,12 +497,16 @@ io.on("connection", (socket) => {
 
     socket.on("webrtc-answer", (data) => {
 
-        if (!data || !data.targetSocketId) {
+        if (
+            !data ||
+            !data.targetSocketId
+        ) {
             return;
         }
 
-
-        io.to(data.targetSocketId).emit(
+        io.to(
+            data.targetSocketId
+        ).emit(
             "webrtc-answer",
             {
                 answer:
@@ -247,9 +516,7 @@ io.on("connection", (socket) => {
                     socket.id
             }
         );
-
     });
-
 
     // ======================================
     // ICE CANDIDATE
@@ -261,11 +528,11 @@ io.on("connection", (socket) => {
 
             if (
                 !data ||
-                !data.targetSocketId
+                !data.targetSocketId ||
+                !data.candidate
             ) {
                 return;
             }
-
 
             io.to(
                 data.targetSocketId
@@ -279,13 +546,11 @@ io.on("connection", (socket) => {
                         socket.id
                 }
             );
-
         }
     );
 
-
     // ======================================
-    // USER LEAVING
+    // LEAVE MEETING
     // ======================================
 
     socket.on("leave-meeting", () => {
@@ -293,6 +558,9 @@ io.on("connection", (socket) => {
         const meetingId =
             socket.meetingId;
 
+        if (!meetingId) {
+            return;
+        }
 
         console.log(
             "LEAVE REQUEST:",
@@ -300,21 +568,10 @@ io.on("connection", (socket) => {
             meetingId
         );
 
-
-        if (!meetingId) {
-            return;
-        }
-
-
-        // Host leaves = end meeting
+        // Host ends meeting
         if (
             socket.userName === "Host"
         ) {
-
-            console.log(
-                `HOST IS ENDING MEETING: ${meetingId}`
-            );
-
 
             socket.to(meetingId).emit(
                 "meeting-ended",
@@ -326,14 +583,10 @@ io.on("connection", (socket) => {
                         "Host has ended the meeting."
                 }
             );
-
         }
 
-
         removeUserFromMeeting(socket);
-
     });
-
 
     // ======================================
     // DISCONNECT
@@ -346,45 +599,12 @@ io.on("connection", (socket) => {
             socket.id
         );
 
-
-        const meetingId =
-            socket.meetingId;
-
-
-        // Host disconnected = end meeting
-        if (
-            meetingId &&
-            socket.userName === "Host"
-        ) {
-
-            console.log(
-                `Host disconnected. Ending meeting ${meetingId}`
-            );
-
-
-            socket.to(meetingId).emit(
-                "meeting-ended",
-                {
-                    meetingId:
-                        meetingId,
-
-                    message:
-                        "Host has left the meeting."
-                }
-            );
-
-        }
-
-
         removeUserFromMeeting(socket);
-
     });
-
 });
 
-
 // ==========================================
-// REMOVE USER FUNCTION
+// REMOVE USER
 // ==========================================
 
 function removeUserFromMeeting(socket) {
@@ -392,85 +612,78 @@ function removeUserFromMeeting(socket) {
     const meetingId =
         socket.meetingId;
 
-
     if (!meetingId) {
         return;
     }
 
+    const meeting =
+        meetings[meetingId];
 
-    if (!meetings[meetingId]) {
+    if (!meeting) {
         return;
     }
 
-
-    const index =
-        meetings[meetingId].findIndex(
+    // Remove joined user
+    const userIndex =
+        meeting.users.findIndex(
             user =>
-                user.socketId === socket.id
+                user.socketId ===
+                socket.id
         );
 
+    if (userIndex !== -1) {
 
-    if (index === -1) {
-        return;
+        const user =
+            meeting.users[userIndex];
+
+        meeting.users.splice(
+            userIndex,
+            1
+        );
+
+        io.to(meetingId).emit(
+            "user-left",
+            {
+                socketId:
+                    socket.id,
+
+                userName:
+                    user.userName
+            }
+        );
     }
 
-
-    const userName =
-        meetings[meetingId][index].userName;
-
-
-    // Remove user
-    meetings[meetingId].splice(
-        index,
-        1
-    );
-
-
-    console.log(
-        `${userName} left meeting ${meetingId}`
-    );
-
-
-    // Tell remaining users
-    io.to(meetingId).emit(
-        "user-left",
-        {
-            socketId:
-                socket.id,
-
-            userName:
-                userName
-        }
-    );
-
+    // Remove pending request
+    meeting.pendingRequests =
+        meeting.pendingRequests.filter(
+            request =>
+                request.socketId !==
+                socket.id
+        );
 
     // Update participants
     io.to(meetingId).emit(
         "update-participants",
-        meetings[meetingId]
+        meeting.users
     );
 
-
-    // Delete empty room
+    // Delete empty meeting memory
     if (
-        meetings[meetingId].length === 0
+        meeting.users.length === 0 &&
+        meeting.pendingRequests.length === 0
     ) {
 
         delete meetings[meetingId];
 
         console.log(
-            `Meeting room ${meetingId} deleted`
+            `Meeting room deleted: ${meetingId}`
         );
-
     }
-
 
     socket.leave(meetingId);
 
     socket.meetingId = null;
-
 }
-
 
 // ==========================================
 // START SERVER
@@ -481,8 +694,7 @@ server.listen(
     () => {
 
         console.log(
-            `Server is running on http://localhost:${PORT}`
+            `Server is running on port ${PORT}`
         );
-
     }
 );
