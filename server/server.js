@@ -347,7 +347,7 @@ io.on("connection", (socket) => {
         );
 
         // Tell existing participants
-        socket.to(meetingId).emit(
+        socket.emit(
             "user-joined",
             {
                 socketId:
