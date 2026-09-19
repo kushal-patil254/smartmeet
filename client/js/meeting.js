@@ -480,32 +480,7 @@ function showRemoteVideo(
     stream
 ) {
 
-    // ======================================
-    // MAIN REMOTE VIDEO
-    // ======================================
-
-    if (remoteVideo) {
-
-        remoteVideo.srcObject =
-            stream;
-
-        remoteVideo.autoplay =
-            true;
-
-        remoteVideo.playsInline =
-            true;
-
-        remoteVideo.controls =
-            false;
-    }
-    // ======================================
-    // VIDEO CONTAINER
-    // ======================================
-
-    if (
-        !userVideoContainer
-    ) {
-
+    if (!userVideoContainer) {
         return;
     }
 
@@ -532,14 +507,10 @@ function showRemoteVideo(
                 "video"
             );
 
-        video.autoplay =
-            true;
-
-        video.playsInline =
-            true;
-
-        video.muted =
-            true;
+        video.autoplay = true;
+        video.playsInline = true;
+        video.controls = false;
+        video.muted = false;
 
         video.className =
             "remote-user-video";
@@ -555,13 +526,8 @@ function showRemoteVideo(
         nameDiv.innerText =
             name || "Guest";
 
-        card.appendChild(
-            video
-        );
-
-        card.appendChild(
-            nameDiv
-        );
+        card.appendChild(video);
+        card.appendChild(nameDiv);
 
         userVideoContainer.appendChild(
             card
@@ -573,42 +539,37 @@ function showRemoteVideo(
             "video"
         );
 
-    if (video) {
+    if (!video) {
+        return;
+    }
 
-        video.srcObject =
-            stream;
+    video.srcObject =
+        stream;
 
-        video.autoplay =
-            true;
+    video.autoplay = true;
+    video.playsInline = true;
+    video.muted = false;
 
-        video.playsInline =
-            true;
+    const playPromise =
+        video.play();
 
-        video.muted =
-            true;
+    if (
+        playPromise &&
+        typeof playPromise.catch ===
+            "function"
+    ) {
 
-        const playPromise =
-            video.play();
+        playPromise.catch(
+            error => {
 
-        if (
-            playPromise &&
-            typeof playPromise.catch ===
-                "function"
-        ) {
-
-            playPromise.catch(
-                error => {
-
-                    console.log(
-                        "Remote video autoplay:",
-                        error
-                    );
-                }
-            );
-        }
+                console.log(
+                    "Remote video autoplay:",
+                    error
+                );
+            }
+        );
     }
 }
-
 // ==========================================
 // REMOVE REMOTE USER
 // ==========================================
@@ -1902,7 +1863,6 @@ socket.on("join-request", function (data) {
     }
 });
 
-
 // ==========================================
 // PARTICIPANT APPROVED
 // ==========================================
@@ -1921,10 +1881,19 @@ socket.on("join-approved", async function (data) {
         "Host approved your request."
     );
 
-    // Start camera/mic after approval
+    // Start camera/mic first
     try {
 
         await startCamera();
+
+        console.log(
+            "Participant camera/mic ready."
+        );
+
+        // Tell server that participant is ready
+        socket.emit(
+            "participant-ready"
+        );
 
     } catch (error) {
 
@@ -1955,7 +1924,6 @@ socket.on(
     }
 );
 
-
 // ==========================================
 // PARTICIPANT REJECTED
 // ==========================================
@@ -1973,8 +1941,6 @@ socket.on("join-rejected", function (data) {
         "Join request rejected."
     );
 });
-
-
 // ==========================================
 // JOIN REQUEST ERROR
 // ==========================================
@@ -2056,85 +2022,43 @@ socket.on(
 // USER JOINED
 // ==========================================
 
-socket.on("user-joined", async function(data) {
+socket.on("user-joined", async function (data) {
 
-    if (!joinApproved) {
+    console.log("User joined:", data);
+
+    if (!data || !data.socketId) {
         return;
     }
 
-    const peer = createPeerConnection(
-        data.socketId,
-        data.userName
-    );
+    try {
 
-    const offer = await peer.createOffer();
-
-    await peer.setLocalDescription(offer);
-
-    socket.emit("webrtc-offer", {
-        targetSocketId: data.socketId,
-        offer: offer
-    });
-});
-
-socket.on(
-    "user-joined",
-    async function (data) {
-
-        console.log(
-            "User joined:",
-            data
+        const peer = createPeerConnection(
+            data.socketId,
+            data.userName
         );
 
-        if (
-            !data ||
-            !data.socketId
-        ) {
+        const offer = await peer.createOffer();
 
-            return;
-        }
+        await peer.setLocalDescription(offer);
 
-        try {
+        socket.emit("webrtc-offer", {
+            targetSocketId: data.socketId,
+            offer: offer
+        });
 
-            const peer =
-                createPeerConnection(
-                    data.socketId,
-                    data.userName
-                );
+        console.log(
+            "WebRTC offer sent to:",
+            data.socketId
+        );
 
-            const offer =
-                await peer.createOffer();
+    } catch (error) {
 
-            await peer.setLocalDescription(
-                offer
-            );
-
-            socket.emit(
-                "webrtc-offer",
-                {
-
-                    targetSocketId:
-                        data.socketId,
-
-                    offer:
-                        offer
-                }
-            );
-
-            console.log(
-                "Offer sent."
-            );
-
-        } catch (error) {
-
-            console.error(
-                "Offer error:",
-                error
-            );
-        }
+        console.error(
+            "WebRTC offer error:",
+            error
+        );
     }
-);
-
+});
 // ==========================================
 // RECEIVE OFFER
 // ==========================================

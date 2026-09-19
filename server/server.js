@@ -345,19 +345,6 @@ io.on("connection", (socket) => {
                     request.userName
             }
         );
-
-        // Tell existing participants
-        socket.emit(
-            "user-joined",
-            {
-                socketId:
-                    request.socketId,
-
-                userName:
-                    request.userName
-            }
-        );
-
         // Update everyone
         io.to(meetingId).emit(
             "update-participants",
@@ -365,6 +352,66 @@ io.on("connection", (socket) => {
         );
     });
 
+     // ==========================================
+// PARTICIPANT READY
+// ==========================================
+
+socket.on("participant-ready", () => {
+
+    const meetingId =
+        socket.meetingId;
+
+    if (!meetingId) {
+        return;
+    }
+
+    const meeting =
+        meetings[meetingId];
+
+    if (!meeting) {
+        return;
+    }
+
+    // Make sure participant was approved
+    const participant =
+        meeting.users.find(
+            user =>
+                user.socketId === socket.id
+        );
+
+    if (!participant) {
+        return;
+    }
+
+    const host =
+        meeting.users.find(
+            user =>
+                user.userName === "Host"
+        );
+
+    if (!host) {
+        console.log(
+            "Host not found for participant-ready"
+        );
+        return;
+    }
+
+    console.log(
+        `Participant ready: ${participant.userName}`
+    );
+
+    // Tell Host to start WebRTC offer
+    io.to(host.socketId).emit(
+        "user-joined",
+        {
+            socketId:
+                participant.socketId,
+
+            userName:
+                participant.userName
+        }
+    );
+});
     // ======================================
     // HOST REJECTS PARTICIPANT
     // ======================================
@@ -429,7 +476,6 @@ io.on("connection", (socket) => {
             }
         );
     });
-
     // ======================================
     // CHAT
     // ======================================
@@ -459,7 +505,6 @@ io.on("connection", (socket) => {
             }
         );
     });
-
     // ======================================
     // WEBRTC OFFER
     // ======================================
@@ -490,7 +535,6 @@ io.on("connection", (socket) => {
             }
         );
     });
-
     // ======================================
     // WEBRTC ANSWER
     // ======================================
@@ -517,7 +561,6 @@ io.on("connection", (socket) => {
             }
         );
     });
-
     // ======================================
     // ICE CANDIDATE
     // ======================================
@@ -548,7 +591,6 @@ io.on("connection", (socket) => {
             );
         }
     );
-
     // ======================================
     // LEAVE MEETING
     // ======================================
@@ -587,7 +629,6 @@ io.on("connection", (socket) => {
 
         removeUserFromMeeting(socket);
     });
-
     // ======================================
     // DISCONNECT
     // ======================================
@@ -602,7 +643,6 @@ io.on("connection", (socket) => {
         removeUserFromMeeting(socket);
     });
 });
-
 // ==========================================
 // REMOVE USER
 // ==========================================
@@ -652,7 +692,6 @@ function removeUserFromMeeting(socket) {
             }
         );
     }
-
     // Remove pending request
     meeting.pendingRequests =
         meeting.pendingRequests.filter(
