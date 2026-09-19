@@ -2,14 +2,12 @@
    SMARTMEET - PROFESSIONAL MEETING UI
    Zoom-style / Dark Modern Interface
    ========================================================= */
-
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
     font-family: Arial, Helvetica, sans-serif;
 }
-
 html,
 body {
     width: 100%;
@@ -18,12 +16,9 @@ body {
     background: #0b1020;
     color: #ffffff;
 }
-
-
 /* =========================================================
    MAIN CONTAINER
    ========================================================= */
-
 .meeting-container {
     width: 100vw;
     height: 100vh;
@@ -34,12 +29,9 @@ body {
 
     overflow: hidden;
 }
-
-
 /* =========================================================
    LEFT SIDEBAR
    ========================================================= */
-
 .meeting-container::before {
     content:
         "▣\A"
@@ -84,12 +76,9 @@ body {
 
     z-index: 500;
 }
-
-
 /* =========================================================
    VIDEO SECTION
    ========================================================= */
-
 .video-section {
     position: relative;
 
@@ -105,12 +94,9 @@ body {
 
     padding: 0;
 }
-
-
 /* =========================================================
    TOP HEADER
    ========================================================= */
-
 #meetingTitle {
     position: absolute;
 
@@ -126,12 +112,9 @@ body {
 
     letter-spacing: 0.2px;
 }
-
-
 /* =========================================================
    MEETING INFORMATION
    ========================================================= */
-
 .meeting-info {
     position: absolute;
 
@@ -852,7 +835,7 @@ body {
     }
 
   .side-panel {
-    display: block;
+    display: none;
     position: fixed;
 
     top: 0;
@@ -869,6 +852,9 @@ body {
     padding: 15px;
 
     box-sizing: border-box;
+}
+.side-panel.chat-open {
+    display: block;
 }
     #meetingTitle {
         top: 18px;
@@ -1394,9 +1380,7 @@ body:not(:has(.meeting-container)) footer p {
 
     body:not(:has(.meeting-container)) header nav {
         order: 3;
-
         width: 100%;
-
         justify-content: center;
     }
 

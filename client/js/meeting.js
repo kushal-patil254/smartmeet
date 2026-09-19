@@ -2399,6 +2399,29 @@ if (sendBtn) {
         sendMessage
     );
 }
+// ==========================================
+// CHAT PANEL TOGGLE
+// ==========================================
+
+const chatBtn =
+    document.getElementById("chatBtn");
+
+const sidePanel =
+    document.querySelector(".side-panel");
+
+if (chatBtn && sidePanel) {
+
+    chatBtn.addEventListener(
+        "click",
+        function () {
+
+            sidePanel.classList.toggle(
+                "chat-open"
+            );
+
+        }
+    );
+}
 
 if (chatBox) {
 
