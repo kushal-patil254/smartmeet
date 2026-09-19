@@ -84,15 +84,29 @@ const meetingDuration =
 // USER
 // ==========================================
 
-let userName =
-    localStorage.getItem("joinedUser");
+let storedUser = localStorage.getItem("joinedUser");
 
-if (!userName) {
-    userName = "Guest";
+let userName = "Guest";
+
+if (storedUser) {
+    try {
+        const parsedUser = JSON.parse(storedUser);
+
+        if (parsedUser && parsedUser.name) {
+            userName = String(parsedUser.name);
+        } else {
+            userName = String(storedUser);
+        }
+    } catch (error) {
+        userName = String(storedUser);
+    }
 }
 
-const isHost =
-    userName === "Host";
+userName = userName.trim() || "Guest";
+
+const isHost = userName === "Host";
+
+let joinApproved = isHost;
 
 // ==========================================
 // HTML ELEMENTS
@@ -1791,28 +1805,18 @@ if (screenBtn) {
 // SOCKET CONNECT
 // ==========================================
 
-socket.on(
-    "connect",
-    function () {
+socket.on("connect", function () {
 
-        console.log(
-            "Connected to SmartMeet:",
-            socket.id
-        );
+    console.log(
+        "Connected to SmartMeet:",
+        socket.id
+    );
 
-        socket.emit(
-            "join-meeting",
-            {
-
-                meetingId:
-                    meetingId,
-
-                userName:
-                    userName
-            }
-        );
-    }
-);
+    socket.emit("join-meeting", {
+        meetingId: meetingId,
+        userName: userName
+    });
+});
 
 // ==========================================
 // SOCKET CONNECT ERROR
@@ -1829,6 +1833,164 @@ socket.on(
     }
 );
 
+// ==========================================
+// JOIN REQUEST SENT
+// ==========================================
+
+socket.on("join-request-sent", function (data) {
+
+    joinApproved = false;
+
+    alert(
+        data?.message ||
+        "Join request sent. Please wait for Host approval."
+    );
+
+    console.log(
+        "Waiting for Host approval..."
+    );
+});
+
+
+// ==========================================
+// HOST RECEIVES JOIN REQUEST
+// ==========================================
+
+socket.on("join-request", function (data) {
+
+    if (!isHost) {
+        return;
+    }
+
+    const requesterName =
+        data?.userName || "Guest";
+
+    const requesterSocketId =
+        data?.socketId;
+
+    if (!requesterSocketId) {
+        return;
+    }
+
+    const accepted =
+        window.confirm(
+            requesterName +
+            " wants to join the meeting.\n\n" +
+            "Press OK to Accept\n" +
+            "Press Cancel to Reject"
+        );
+
+    if (accepted) {
+
+        socket.emit(
+            "approve-join",
+            {
+                targetSocketId:
+                    requesterSocketId
+            }
+        );
+
+    } else {
+
+        socket.emit(
+            "reject-join",
+            {
+                targetSocketId:
+                    requesterSocketId
+            }
+        );
+    }
+});
+
+
+// ==========================================
+// PARTICIPANT APPROVED
+// ==========================================
+
+socket.on("join-approved", async function (data) {
+
+    console.log(
+        "JOIN APPROVED:",
+        data
+    );
+
+    joinApproved = true;
+
+    alert(
+        data?.message ||
+        "Host approved your request."
+    );
+
+    // Start camera/mic after approval
+    try {
+
+        await startCamera();
+
+    } catch (error) {
+
+        console.error(
+            "Camera start error:",
+            error
+        );
+    }
+
+    console.log(
+        "Participant is now inside meeting."
+    );
+});
+
+
+// ==========================================
+// HOST SIDE APPROVAL CONFIRMATION
+// ==========================================
+
+socket.on(
+    "join-approved-host",
+    function (data) {
+
+        console.log(
+            "Participant approved:",
+            data?.userName
+        );
+    }
+);
+
+
+// ==========================================
+// PARTICIPANT REJECTED
+// ==========================================
+
+socket.on("join-rejected", function (data) {
+
+    joinApproved = false;
+
+    alert(
+        data?.message ||
+        "Host rejected your join request."
+    );
+
+    console.log(
+        "Join request rejected."
+    );
+});
+
+
+// ==========================================
+// JOIN REQUEST ERROR
+// ==========================================
+
+socket.on(
+    "join-request-error",
+    function (data) {
+
+        joinApproved = false;
+
+        alert(
+            data?.message ||
+            "Unable to join meeting."
+        );
+    }
+);
 // ==========================================
 // PARTICIPANTS
 // ==========================================
@@ -1893,6 +2055,27 @@ socket.on(
 // ==========================================
 // USER JOINED
 // ==========================================
+
+socket.on("user-joined", async function(data) {
+
+    if (!joinApproved) {
+        return;
+    }
+
+    const peer = createPeerConnection(
+        data.socketId,
+        data.userName
+    );
+
+    const offer = await peer.createOffer();
+
+    await peer.setLocalDescription(offer);
+
+    socket.emit("webrtc-offer", {
+        targetSocketId: data.socketId,
+        offer: offer
+    });
+});
 
 socket.on(
     "user-joined",
