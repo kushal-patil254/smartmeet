@@ -833,12 +833,9 @@ body {
         font-size: 11px;
     }
 }
-
-
 /* =========================================================
    MOBILE
    ========================================================= */
-
 @media (max-width: 800px) {
 
     .meeting-container {
@@ -854,10 +851,25 @@ body {
         height: 100vh;
     }
 
-    .side-panel {
-        display: none;
-    }
+  .side-panel {
+    display: block;
+    position: fixed;
 
+    top: 0;
+    right: 0;
+
+    width: 320px;
+    height: 100vh;
+
+    z-index: 1000;
+
+    overflow-y: auto;
+
+    background: #111827;
+    padding: 15px;
+
+    box-sizing: border-box;
+}
     #meetingTitle {
         top: 18px;
         left: 18px;
@@ -954,8 +966,6 @@ body {
         min-width: 85px;
     }
 }
-
-
 /* =========================================================
    SMALL MOBILE
    ========================================================= */
@@ -982,7 +992,6 @@ body {
         font-size: 9px;
     }
 }
-
 /* =========================================================
    SMARTMEET - HOME / INDEX PAGE
    DO NOT MODIFY MEETING PAGE
@@ -1021,10 +1030,7 @@ body:not(:has(.meeting-container)) header {
 
     backdrop-filter: blur(15px);
 }
-
-
 /* ---------- LOGO ---------- */
-
 body:not(:has(.meeting-container)) header .logo {
     display: flex;
     align-items: center;
@@ -1050,10 +1056,7 @@ body:not(:has(.meeting-container)) header .logo h1 {
 
     letter-spacing: -0.5px;
 }
-
-
 /* ---------- NAVIGATION ---------- */
-
 body:not(:has(.meeting-container)) header nav {
     display: flex;
     align-items: center;
@@ -1078,8 +1081,6 @@ body:not(:has(.meeting-container)) header nav a {
 body:not(:has(.meeting-container)) header nav a:hover {
     color: #3b82f6;
 }
-
-
 /* ---------- LOGIN / SIGNUP ---------- */
 
 body:not(:has(.meeting-container)) header > div:last-child {
@@ -1117,12 +1118,9 @@ body:not(:has(.meeting-container)) header button:hover {
 
     transform: translateY(-1px);
 }
-
-
 /* =========================================================
    HERO SECTION
    ========================================================= */
-
 body:not(:has(.meeting-container)) .hero {
     min-height: 520px;
 
@@ -1137,10 +1135,7 @@ body:not(:has(.meeting-container)) .hero {
 
     position: relative;
 }
-
-
 /* Glow */
-
 body:not(:has(.meeting-container)) .hero::before {
     content: "";
 
@@ -1162,10 +1157,7 @@ body:not(:has(.meeting-container)) .hero::before {
 
     pointer-events: none;
 }
-
-
 /* Hero heading */
-
 body:not(:has(.meeting-container)) .hero h2 {
     position: relative;
 
@@ -1183,10 +1175,7 @@ body:not(:has(.meeting-container)) .hero h2 {
 
     margin-bottom: 22px;
 }
-
-
 /* Blue gradient text */
-
 body:not(:has(.meeting-container)) .hero h2 {
     background: linear-gradient(
         90deg,
@@ -1199,10 +1188,7 @@ body:not(:has(.meeting-container)) .hero h2 {
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
 }
-
-
 /* Hero paragraph */
-
 body:not(:has(.meeting-container)) .hero p {
     position: relative;
 
@@ -1216,10 +1202,7 @@ body:not(:has(.meeting-container)) .hero p {
 
     margin-bottom: 32px;
 }
-
-
 /* ---------- HERO BUTTONS ---------- */
-
 body:not(:has(.meeting-container)) .hero-buttons {
     position: relative;
 
@@ -1273,12 +1256,9 @@ body:not(:has(.meeting-container)) .hero-buttons button:hover {
     box-shadow:
         0 12px 30px rgba(37,99,235,0.35);
 }
-
-
 /* =========================================================
    FEATURES
    ========================================================= */
-
 body:not(:has(.meeting-container)) .features {
     width: 86%;
 
@@ -1293,10 +1273,7 @@ body:not(:has(.meeting-container)) .features {
 
     gap: 22px;
 }
-
-
 /* Feature card */
-
 body:not(:has(.meeting-container)) .features .card {
     padding: 30px;
 
@@ -1327,10 +1304,7 @@ body:not(:has(.meeting-container)) .features .card:hover {
     box-shadow:
         0 20px 45px rgba(37,99,235,0.15);
 }
-
-
 /* Feature title */
-
 body:not(:has(.meeting-container)) .features .card h3 {
     color: #ffffff;
 
@@ -1349,12 +1323,9 @@ body:not(:has(.meeting-container)) .features .card p {
 
     line-height: 1.6;
 }
-
-
 /* =========================================================
    FOOTER
    ========================================================= */
-
 body:not(:has(.meeting-container)) footer {
     width: 100%;
 
@@ -1382,12 +1353,9 @@ body:not(:has(.meeting-container)) footer p {
 
     margin-top: 7px;
 }
-
-
-/* =========================================================
+/* ========================================================
    HOME RESPONSIVE
    ========================================================= */
-
 @media (max-width: 850px) {
 
     body:not(:has(.meeting-container)) header {
