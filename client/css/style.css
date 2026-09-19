@@ -3042,3 +3042,67 @@ body:has(#meetingDetails) .login-container {
         min-width: 78px !important;
     }
 }
+/* ==========================================
+   SMARTMEET QR CODE
+   ========================================== */
+
+#qrSection {
+    text-align: center;
+    margin-top: 15px !important;
+}
+
+#qrSection h3 {
+    margin: 8px 0;
+}
+
+#qrcode {
+    width: 150px;
+    height: 150px;
+    margin: 10px auto !important;
+    padding: 5px;
+    background: #ffffff;
+    border-radius: 8px;
+}
+
+#qrcode img {
+    width: 140px !important;
+    height: 140px !important;
+    display: block;
+}
+
+#qrSection p {
+    margin: 8px 0;
+    font-size: 13px;
+}
+
+#startMeetingBtn {
+    display: block;
+    width: 100%;
+    margin-top: 15px;
+}
+
+@media (max-width: 500px) {
+
+    #qrSection {
+        margin-top: 10px !important;
+    }
+
+    #qrcode {
+        width: 125px;
+        height: 125px;
+        margin: 8px auto !important;
+    }
+
+    #qrcode img {
+        width: 115px !important;
+        height: 115px !important;
+    }
+
+    #qrSection p {
+        font-size: 12px;
+    }
+
+    #startMeetingBtn {
+        margin-top: 10px;
+    }
+}

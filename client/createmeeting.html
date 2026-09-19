@@ -2,48 +2,34 @@
 <html lang="en">
 
 <head>
-
     <meta charset="UTF-8">
-
     <meta
         name="viewport"
         content="width=device-width, initial-scale=1.0"
     >
-
     <title>SmartMeet - Create Meeting</title>
-
     <link rel="stylesheet" href="css/style.css">
     <link rel="icon" type="image/png" href="./images/smartmeet-icon.png?v=2">
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 </head>
-
-
 <body>
-
-
 <div class="login-container">
 
     <h1>SmartMeet</h1>
 
     <h2>Create Meeting</h2>
-
-
     <input
         type="text"
         id="meetingName"
         placeholder="Meeting Name"
         autocomplete="off"
     >
-
-
     <input
         type="password"
         id="meetingPassword"
         placeholder="Meeting Password"
         autocomplete="off"
     >
-
-
     <select id="meetingDuration">
 
         <option value="60">
@@ -59,24 +45,17 @@
         </option>
 
     </select>
-
-
     <br>
     <br>
-
-
     <button
         type="button"
         id="createBtn"
     >
         Create Meeting
     </button>
-
-
     <!-- ======================================
          MEETING DETAILS
     ======================================= -->
-
     <div
         id="meetingDetails"
         style="display:none; margin-top:20px;"
@@ -90,6 +69,18 @@
         <p id="showMeetingId"></p>
 
         <p id="showMeetingPassword"></p>
+        <div id="qrSection" style="display:none; margin-top:20px;">
+    <h3>Scan to Join</h3>
+
+    <div
+        id="qrcode"
+        style="display:flex; justify-content:center; margin:15px 0;">
+    </div>
+
+    <p>
+        Scan this QR code to join the meeting.
+    </p>
+</div>
 
 
         <button
@@ -98,55 +89,36 @@
         >
             Start Meeting
         </button>
-
     </div>
-
 </div>
-
-
-
 <script>
-
-
 // ==========================================
 // SMARTMEET API
 // ==========================================
-
 const API_URL =
     "https://smartmeet-production.up.railway.app";
-
-
 // ==========================================
 // CREATE MEETING
 // ==========================================
 
 async function createMeeting() {
-
     console.log(
         "CREATE BUTTON CLICKED"
     );
-
-
     const meetingName =
         document
             .getElementById("meetingName")
             .value
             .trim();
-
-
     const meetingPassword =
         document
             .getElementById("meetingPassword")
             .value
             .trim();
-
-
     const meetingDuration =
         document
             .getElementById("meetingDuration")
             .value;
-
-
     // ======================================
     // VALIDATION
     // ======================================
@@ -160,8 +132,6 @@ async function createMeeting() {
         return;
 
     }
-
-
     if (!meetingPassword) {
 
         alert(
@@ -169,45 +139,32 @@ async function createMeeting() {
         );
 
         return;
-
     }
-
-
     // ======================================
     // GENERATE MEETING ID
     // ======================================
-
     const meetingId =
         Math.floor(
             100000000 +
             Math.random() * 900000000
         );
-
-
     console.log(
         "Generated Meeting ID:",
         meetingId
     );
-
-
     const createBtn =
         document.getElementById(
             "createBtn"
         );
-
-
     createBtn.disabled =
         true;
 
 
     createBtn.innerText =
         "Creating Meeting...";
-
-
     // ======================================
     // SEND REQUEST TO RAILWAY
     // ======================================
-
     try {
 
         console.log(
@@ -229,7 +186,6 @@ async function createMeeting() {
                             "application/json"
 
                     },
-
                     body:
                         JSON.stringify({
 
@@ -246,7 +202,6 @@ async function createMeeting() {
                                 meetingDuration
 
                         })
-
                 }
             );
 
@@ -255,8 +210,6 @@ async function createMeeting() {
             "Railway response status:",
             response.status
         );
-
-
         // ==================================
         // CHECK HTTP RESPONSE
         // ==================================
@@ -269,8 +222,6 @@ async function createMeeting() {
             );
 
         }
-
-
         const data =
             await response.json();
 
@@ -279,8 +230,6 @@ async function createMeeting() {
             "Server response:",
             data
         );
-
-
         // ==================================
         // SERVER ERROR
         // ==================================
@@ -304,8 +253,6 @@ async function createMeeting() {
             return;
 
         }
-
-
         // ==================================
         // SAVE MEETING DATA
         // ==================================
@@ -368,6 +315,49 @@ async function createMeeting() {
         ).innerText =
             "Password : " +
             meetingPassword;
+
+// ==================================
+// GENERATE QR CODE
+// ==================================
+
+const joinUrl =
+    "https://kushal-patil254.github.io/smartmeet/client/join.html" +
+    "?meetingId=" +
+    meetingId;
+
+document.getElementById("qrcode").innerHTML = "";
+
+new QRCode(
+    document.getElementById("qrcode"),
+    {
+        text: joinUrl,
+        width: 140,
+        height: 140,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    }
+);
+
+document.getElementById("qrSection").style.display =
+    "block";
+
+document.getElementById("qrcode").innerHTML = "";
+
+new QRCode(
+    document.getElementById("qrcode"),
+    {
+        text: joinUrl,
+        width: 180,
+        height: 180,
+        colorDark: "#000000",
+        colorLight: "#ffffff",
+        correctLevel: QRCode.CorrectLevel.H
+    }
+);
+
+document.getElementById("qrSection").style.display =
+    "block";
 
 
         // Hide create button
@@ -449,8 +439,6 @@ document
 
         }
     );
-
-
 // ==========================================
 // LOGIN CHECK
 // ==========================================
@@ -465,12 +453,9 @@ if (
         "login.html";
 
 }
-
-
 console.log(
     "SmartMeet Create Meeting Loaded"
 );
-
 </script>
 
 

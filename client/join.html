@@ -322,6 +322,20 @@ body {
 </div>
 
 <script>
+// ==========================================
+// QR CODE - AUTO FILL MEETING ID
+// ==========================================
+
+const qrParams = new URLSearchParams(
+    window.location.search
+);
+
+const qrMeetingId = qrParams.get("meetingId");
+
+if (qrMeetingId) {
+    document.getElementById("meetingId").value = qrMeetingId;
+    document.getElementById("meetingId").readOnly = true;
+}
 
 async function joinMeeting() {
 
