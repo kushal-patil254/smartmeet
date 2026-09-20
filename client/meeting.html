@@ -111,6 +111,77 @@
     height: 42px;
     margin-bottom: 5px;
 }
+/* =========================================
+   MOBILE LANDSCAPE CHAT COMPOSER FIX
+   ========================================= */
+
+.side-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+
+    width: 280px;
+    min-width: 280px;
+    height: 100vh;
+
+    padding: 12px;
+
+    padding-bottom: 120px;
+
+    box-sizing: border-box;
+
+    overflow-y: auto;
+
+    z-index: 1000;
+}
+
+/* Chat message box */
+.side-panel #chatBox {
+    position: absolute;
+
+    left: 12px;
+    bottom: 82px;
+
+    width: calc(100% - 95px);
+
+    height: 48px;
+    min-height: 48px;
+    max-height: 48px;
+
+    box-sizing: border-box;
+
+    resize: none;
+
+    z-index: 1100;
+}
+
+/* Send button */
+.side-panel #sendBtn {
+    position: absolute;
+
+    right: 12px;
+    bottom: 82px;
+
+    width: 70px;
+    height: 48px;
+
+    margin: 0;
+
+    z-index: 1100;
+
+    background: #2563eb;
+
+    color: white;
+
+    border: none;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    cursor: pointer;
+}
 </style>
 </head>
 
