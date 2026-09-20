@@ -2406,6 +2406,18 @@ if (sendBtn) {
 const chatBtn =
     document.getElementById("chatBtn");
 
+    const closeChatBtn =
+    document.getElementById("closeChatBtn");
+
+if (closeChatBtn && sidePanel) {
+    closeChatBtn.addEventListener(
+        "click",
+        function () {
+            sidePanel.classList.remove("chat-open");
+        }
+    );
+}
+
 const sidePanel =
     document.querySelector(".side-panel");
 
