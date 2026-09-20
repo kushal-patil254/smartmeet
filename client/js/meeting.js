@@ -2406,20 +2406,11 @@ if (sendBtn) {
 const chatBtn =
     document.getElementById("chatBtn");
 
-    const closeChatBtn =
-    document.getElementById("closeChatBtn");
-
-if (closeChatBtn && sidePanel) {
-    closeChatBtn.addEventListener(
-        "click",
-        function () {
-            sidePanel.classList.remove("chat-open");
-        }
-    );
-}
-
 const sidePanel =
     document.querySelector(".side-panel");
+
+const closeChatBtn =
+    document.getElementById("closeChatBtn");
 
 if (chatBtn && sidePanel) {
 
@@ -2428,6 +2419,20 @@ if (chatBtn && sidePanel) {
         function () {
 
             sidePanel.classList.toggle(
+                "chat-open"
+            );
+
+        }
+    );
+}
+
+if (closeChatBtn && sidePanel) {
+
+    closeChatBtn.addEventListener(
+        "click",
+        function () {
+
+            sidePanel.classList.remove(
                 "chat-open"
             );
 
@@ -2453,7 +2458,6 @@ if (chatBox) {
         }
     );
 }
-
 // ==========================================
 // RECEIVE CHAT
 // ==========================================
