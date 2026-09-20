@@ -22,11 +22,8 @@ body {
 .meeting-container {
     width: 100vw;
     height: 100vh;
-
     display: flex;
-
     background: #0b1020;
-
     overflow: hidden;
 }
 /* =========================================================
@@ -52,28 +49,19 @@ body {
         "Invite";
 
     white-space: pre;
-
     width: 105px;
     min-width: 105px;
     height: 100vh;
-
     background: #0d1424;
-
     border-right: 1px solid #202a3d;
-
     color: #9aa7bd;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
     text-align: center;
-
     font-size: 12px;
     line-height: 1.35;
-
     padding: 18px 5px;
-
     z-index: 500;
 }
 /* =========================================================
@@ -81,17 +69,11 @@ body {
    ========================================================= */
 .video-section {
     position: relative;
-
     flex: 1;
-
     height: 100vh;
-
     min-width: 0;
-
     background: #080e1b;
-
     overflow: hidden;
-
     padding: 0;
 }
 /* =========================================================
@@ -99,17 +81,12 @@ body {
    ========================================================= */
 #meetingTitle {
     position: absolute;
-
     top: 25px;
     left: 25px;
-
     z-index: 100;
-
     font-size: 22px;
     font-weight: 700;
-
     color: #ffffff;
-
     letter-spacing: 0.2px;
 }
 /* =========================================================
@@ -117,17 +94,12 @@ body {
    ========================================================= */
 .meeting-info {
     position: absolute;
-
     top: 20px;
     left: 240px;
-
     z-index: 100;
-
     display: flex;
     align-items: center;
-
     gap: 18px;
-
     padding: 11px 18px;
 
     background: #111a2b;
@@ -2652,11 +2624,6 @@ body:has(#meetingDetails) .login-container {
         overflow: hidden !important;
         position: relative;
     }
-
-    .side-panel {
-        display: none !important;
-    }
-
     #meetingTitle {
         top: 8px;
         left: 12px;
@@ -2873,10 +2840,6 @@ body:has(#meetingDetails) .login-container {
     #slideControls {
         bottom: -15px;
     }
-
-    .side-panel {
-        display: none !important;
-    }
 }
 
 /* =========================================================
@@ -2908,11 +2871,6 @@ body:has(#meetingDetails) .login-container {
         overflow: hidden !important;
         padding: 0 !important;
     }
-
-    .side-panel {
-        display: none !important;
-    }
-
     /* ---------- HEADER ---------- */
 
     #meetingTitle {
