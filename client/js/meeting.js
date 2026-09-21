@@ -1177,37 +1177,36 @@ window.onAndroidScreenShareStarted =
 
             updateMediaButtons();
 
-            // ==================================
-            // SHOW SCREEN LOCALLY
-            // ==================================
+           // ==================================
+// SHOW SCREEN LOCALLY
+// ==================================
 
-            if (localVideo) {
+if (localVideo) {
 
-                localVideo.srcObject =
-                    androidScreenStream;
+    localVideo.srcObject =
+        androidScreenStream;
 
-                localVideo.autoplay =
-                    true;
+    localVideo.autoplay =
+        true;
 
-                localVideo.playsInline =
-                    true;
+    localVideo.playsInline =
+        true;
 
-                localVideo.muted =
-                    true;
+    localVideo.muted =
+        true;
 
-                try {
+    try {
 
-                    await localVideo.play();
+        await localVideo.play();
 
-                } catch (error) {
+    } catch (error) {
 
-                    console.log(
-                        "Android screen local play:",
-                        error
-                    );
-                }
-            }
-
+        console.log(
+            "Android screen local play:",
+            error
+        );
+    }
+}
             // ==================================
             // REPLACE VIDEO TRACK
             // ==================================
