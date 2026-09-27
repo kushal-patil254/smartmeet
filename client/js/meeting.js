@@ -6,10 +6,10 @@ alert("MEETING JS LOADED");
 // ==========================================
 
 const API_URL =
-     "https://smartmeet-2yln.onrender.com";
+     "https://smartmeet-2yti.onrender.com";
 
 const SOCKET_URL =
-    "https://smartmeet-2yln.onrender.com";
+    "https://smartmeet-2yti.onrender.com";
 
 if (typeof io === "undefined") {
     alert("SmartMeet Error: Socket.IO did not load.");
