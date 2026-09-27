@@ -2,14 +2,14 @@ alert("MEETING JS LOADED");
 
 // ==========================================
 // SMARTMEET - MEETING.JS
-// Railway + GitHub Pages + Android Native Screen Share
+// Render + GitHub Pages + Android Native Screen Share
 // ==========================================
 
 const API_URL =
-    "https://smartmeet-production.up.railway.app";
+     "https://smartmeet-2yln.onrender.com";
 
 const SOCKET_URL =
-    "https://smartmeet-production.up.railway.app";
+    "https://smartmeet-2yln.onrender.com";
 
 if (typeof io === "undefined") {
     alert("SmartMeet Error: Socket.IO did not load.");
@@ -1177,7 +1177,7 @@ window.onAndroidScreenShareStarted =
 
             updateMediaButtons();
 
-           // ==================================
+// ==================================
 // SHOW SCREEN LOCALLY
 // ==================================
 

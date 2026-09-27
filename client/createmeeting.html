@@ -96,7 +96,7 @@
 // SMARTMEET API
 // ==========================================
 const API_URL =
-    "https://smartmeet-production.up.railway.app";
+    "https://smartmeet-2yln.onrender.com";
 // ==========================================
 // CREATE MEETING
 // ==========================================
@@ -163,12 +163,12 @@ async function createMeeting() {
     createBtn.innerText =
         "Creating Meeting...";
     // ======================================
-    // SEND REQUEST TO RAILWAY
+    // SEND REQUEST TO Render
     // ======================================
     try {
 
         console.log(
-            "Sending request to Railway..."
+            "Sending request to Render..."
         );
 
 
@@ -207,7 +207,7 @@ async function createMeeting() {
 
 
         console.log(
-            "Railway response status:",
+            "Render response status:",
             response.status
         );
         // ==================================
